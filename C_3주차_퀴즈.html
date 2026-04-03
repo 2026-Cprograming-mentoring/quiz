@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C 언어 3주차 퀴즈</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3348;
+    --blue: #4f8ef7;
+    --blue-dim: #2a3f6e;
+    --green: #3ecf8e;
+    --green-dim: #1a3d2f;
+    --red: #f7604f;
+    --red-dim: #3d1f1a;
+    --yellow: #f7c84f;
+    --yellow-dim: #3d300f;
+    --text: #e2e8f4;
+    --text-dim: #8892a4;
+    --code-bg: #0d1117;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--blue-dim);
+    color: var(--blue);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  h1 span { color: var(--blue); }
+
+  .score-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .score-val { color: var(--blue); font-weight: 700; font-size: 18px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin: 40px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .quiz-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .card.correct { border-color: var(--green); background: #131e18; }
+  .card.wrong   { border-color: var(--red);   background: #1e1414; }
+
+  .q-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  .q-text {
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  /* OX */
+  .ox-btns { display: flex; gap: 10px; }
+
+  .ox-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .ox-btn:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-dim); }
+  .ox-btn.selected-o { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+  .ox-btn.selected-x { border-color: var(--red);   background: var(--red-dim);   color: var(--red); }
+  .ox-btn:disabled { cursor: default; opacity: 0.7; }
+
+  /* Fill blank */
+  .blank-wrap {
+    background: var(--code-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    white-space: pre-wrap;
+    margin-bottom: 14px;
+  }
+
+  .blank-input {
+    display: inline-block;
+    background: #1e2436;
+    border: 1.5px solid var(--blue);
+    border-radius: 4px;
+    color: var(--yellow);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 1px 8px;
+    width: auto;
+    min-width: 60px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    vertical-align: middle;
+  }
+
+  .blank-input:focus { border-color: var(--yellow); background: #29301f; }
+  .blank-input.correct-inp { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+  .blank-input.wrong-inp   { border-color: var(--red);   background: var(--red-dim);   color: var(--red); }
+  .blank-input:disabled { cursor: default; }
+
+  .code-comment { color: #5c6680; }
+  .code-kw  { color: #c792ea; }
+  .code-fn  { color: #82aaff; }
+  .code-num { color: #f78c6c; }
+  .code-str { color: #c3e88d; }
+  .code-type{ color: #ffcb6b; }
+
+  .submit-btn {
+    margin-top: 14px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: var(--blue);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .submit-btn:hover { opacity: 0.85; }
+  .submit-btn:disabled { background: var(--border); color: var(--text-dim); cursor: default; }
+
+  .feedback {
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 10px 14px;
+    border-radius: 8px;
+    display: none;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.ok  { background: var(--green-dim); color: var(--green); }
+  .feedback.ng  { background: var(--red-dim);   color: #ff9f9f; }
+
+  .answer-hint {
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Result */
+  .result-panel {
+    max-width: 760px;
+    margin: 48px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+    text-align: center;
+    display: none;
+  }
+
+  .result-panel.show { display: block; }
+
+  .result-score {
+    font-size: 52px;
+    font-weight: 700;
+    color: var(--blue);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .result-msg { font-size: 16px; color: var(--text-dim); margin-bottom: 24px; }
+
+  .retry-btn {
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: 2px solid var(--blue);
+    background: transparent;
+    color: var(--blue);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .retry-btn:hover { background: var(--blue); color: #fff; }
+
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 6px;
+    max-width: 760px;
+    margin: 0 auto 32px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">C LANGUAGE · WEEK 3</div>
+  <h1>함수 / 포인터 / 배열<br><span>실력 체크 퀴즈</span></h1>
+  <div class="score-bar">
+    <div>맞은 개수 <span class="score-val" id="correct-count">0</span></div>
+    <div>·</div>
+    <div>전체 <span class="score-val" id="total-count">0</span></div>
+  </div>
+</header>
+
+<div class="progress-bar-wrap"><div class="progress-bar" id="prog"></div></div>
+
+<!-- OX 섹션 -->
+<div class="section-label">O / X 퀴즈</div>
+<div class="quiz-list" id="ox-list"></div>
+
+<!-- 빈칸 채우기 섹션 -->
+<div class="section-label">빈칸 채우기 — 코드 완성</div>
+<div class="quiz-list" id="fill-list"></div>
+
+<div class="result-panel" id="result">
+  <div class="result-score" id="result-score">0 / 0</div>
+  <div class="result-msg" id="result-msg"></div>
+  <button class="retry-btn" onclick="location.reload()">🔄 다시 풀기</button>
+</div>
+
+<script>
+// ─── 데이터 ──────────────────────────────────────────────
+const OX = [
+  {
+    q: "함수를 호출할 때 넘기는 값(예: add(3,5)에서 3과 5)을 <b>매개변수(parameter)</b>라고 한다.",
+    ans: false,
+    exp: "❌ 틀렸습니다. 호출할 때 넘기는 값은 <b>인자(argument)</b>입니다. 함수 정의에서 선언하는 변수(int a, int b)가 매개변수예요."
+  },
+  {
+    q: "void 함수는 return 문을 절대 쓸 수 없다.",
+    ans: false,
+    exp: "❌ 틀렸습니다. void 함수에서도 <b>return;</b> (값 없이)으로 함수를 일찍 종료할 수 있어요."
+  },
+  {
+    q: "지역변수는 함수가 끝나면 스택에서 자동으로 사라진다.",
+    ans: true,
+    exp: "⭕ 맞습니다. 지역변수는 스택 프레임에 저장되고, 함수가 종료되면 프레임과 함께 사라져요."
+  },
+  {
+    q: "전역변수는 초기화하지 않으면 쓰레기값이 들어있다.",
+    ans: false,
+    exp: "❌ 틀렸습니다. 전역변수는 자동으로 <b>0으로 초기화</b>됩니다. 쓰레기값 위험은 지역변수입니다."
+  },
+  {
+    q: "재귀 함수에서 종료 조건이 없으면 스택 오버플로우가 발생한다.",
+    ans: true,
+    exp: "⭕ 맞습니다. 종료 조건 없이 계속 자기 자신을 호출하면 스택 프레임이 무한히 쌓여 스택 오버플로우가 발생해요."
+  },
+  {
+    q: "포인터 변수 p에서 *p는 p가 저장하고 있는 주소값 자체를 의미한다.",
+    ans: false,
+    exp: "❌ 틀렸습니다. <b>p</b>가 주소값이고, <b>*p</b>는 그 주소에 저장된 <b>값</b>입니다."
+  },
+  {
+    q: "배열 이름 arr은 arr[0]의 주소(&arr[0])와 같은 값이다.",
+    ans: true,
+    exp: "⭕ 맞습니다. 배열 이름 자체가 첫 번째 원소의 주소를 의미해요. printf(\"%p\", arr)와 printf(\"%p\", &arr[0])의 결과가 같습니다."
+  },
+  {
+    q: "swap(x, y)처럼 값을 그대로 넘기면 함수 안에서 x와 y의 원본값을 교환할 수 있다.",
+    ans: false,
+    exp: "❌ 틀렸습니다. 값을 넘기면 복사본이 전달되므로 원본은 바뀌지 않아요. 원본을 바꾸려면 <b>swap(&x, &y)</b>처럼 주소를 넘겨야 합니다."
+  },
+];
+
+const FILL = [
+  {
+    q: "아래 함수는 두 정수를 더해서 반환한다. 빈칸을 채워라.",
+    code: [
+      { t: "kw", v: "int" }, { t: "sp", v: " " }, { t: "fn", v: "add" }, { t: "plain", v: "(" },
+      { t: "kw", v: "int" }, { t: "plain", v: " a, " }, { t: "kw", v: "int" }, { t: "plain", v: " b) {\n    " },
+      { t: "kw", v: "return" }, { t: "plain", v: " " },
+      { t: "blank", id: 0, w: "80px", ans: "a + b", hint: "a + b" },
+      { t: "plain", v: ";\n}" },
+    ]
+  },
+  {
+    q: "포인터를 선언하고 변수 a의 주소를 저장하는 코드를 완성하라.",
+    code: [
+      { t: "kw", v: "int" }, { t: "plain", v: " a = 10;\n" },
+      { t: "kw", v: "int" }, { t: "plain", v: " " },
+      { t: "blank", id: 1, w: "30px", ans: "*p", hint: "*p" },
+      { t: "plain", v: " = " },
+      { t: "blank", id: 2, w: "30px", ans: "&a", hint: "&a" },
+      { t: "plain", v: ";   " }, { t: "comment", v: "// p 에 a 의 주소 저장" },
+    ]
+  },
+  {
+    q: "역참조 연산자를 사용해서 포인터가 가리키는 값을 출력하라.",
+    code: [
+      { t: "kw", v: "int" }, { t: "plain", v: " a = 42;\n" },
+      { t: "kw", v: "int" }, { t: "plain", v: " *p = &a;\n" },
+      { t: "fn", v: "printf" }, { t: "plain", v: '(' },
+      { t: "str", v: '"%d\\n"' }, { t: "plain", v: ", " },
+      { t: "blank", id: 3, w: "40px", ans: "*p", hint: "*p" },
+      { t: "plain", v: ");   " }, { t: "comment", v: "// 42 출력" },
+    ]
+  },
+  {
+    q: "포인터를 이용해 두 변수를 swap하는 함수를 완성하라.",
+    code: [
+      { t: "kw", v: "void" }, { t: "plain", v: " " }, { t: "fn", v: "swap" }, { t: "plain", v: "(" },
+      { t: "kw", v: "int" }, { t: "plain", v: " " },
+      { t: "blank", id: 4, w: "40px", ans: "*a", hint: "*a" },
+      { t: "plain", v: ", " }, { t: "kw", v: "int" }, { t: "plain", v: " " },
+      { t: "blank", id: 5, w: "40px", ans: "*b", hint: "*b" },
+      { t: "plain", v: ") {\n    " },
+      { t: "kw", v: "int" }, { t: "plain", v: " temp = " },
+      { t: "blank", id: 6, w: "40px", ans: "*a", hint: "*a" },
+      { t: "plain", v: ";\n    " },
+      { t: "blank", id: 7, w: "40px", ans: "*a", hint: "*a" },
+      { t: "plain", v: " = " },
+      { t: "blank", id: 8, w: "40px", ans: "*b", hint: "*b" },
+      { t: "plain", v: ";\n    " },
+      { t: "blank", id: 9, w: "40px", ans: "*b", hint: "*b" },
+      { t: "plain", v: " = temp;\n}" },
+    ]
+  },
+  {
+    q: "배열의 두 번째 원소를 포인터 연산식으로도 접근할 수 있다. 빈칸을 채워라.",
+    code: [
+      { t: "kw", v: "int" }, { t: "plain", v: " arr[3] = {10, 20, 30};\n\n" },
+      { t: "fn", v: "printf" }, { t: "plain", v: '(' }, { t: "str", v: '"%d\\n"' },
+      { t: "plain", v: ", arr[1]);\n" },
+      { t: "fn", v: "printf" }, { t: "plain", v: '(' }, { t: "str", v: '"%d\\n"' },
+      { t: "plain", v: ", " },
+      { t: "blank", id: 10, w: "110px", ans: "*(arr + 1)", hint: "*(arr + 1)" },
+      { t: "plain", v: ");  " }, { t: "comment", v: "// 같은 결과: 20" },
+    ]
+  },
+  {
+    q: "재귀 함수로 팩토리얼을 구현한다. 종료 조건 빈칸을 채워라.",
+    code: [
+      { t: "kw", v: "int" }, { t: "plain", v: " " }, { t: "fn", v: "factorial" },
+      { t: "plain", v: "(" }, { t: "kw", v: "int" }, { t: "plain", v: " n) {\n    " },
+      { t: "kw", v: "if" }, { t: "plain", v: " (n == " },
+      { t: "blank", id: 11, w: "30px", ans: "0", hint: "0" },
+      { t: "plain", v: ") " }, { t: "kw", v: "return" }, { t: "plain", v: " " },
+      { t: "blank", id: 12, w: "30px", ans: "1", hint: "1" },
+      { t: "plain", v: ";\n    " },
+      { t: "kw", v: "return" }, { t: "plain", v: " n * " }, { t: "fn", v: "factorial" },
+      { t: "plain", v: "(n - 1);\n}" },
+    ]
+  },
+  {
+    q: "함수 프로토타입을 선언하는 올바른 형태를 완성하라.",
+    code: [
+      { t: "kw", v: "int" }, { t: "plain", v: " " }, { t: "fn", v: "add" },
+      { t: "plain", v: "(" }, { t: "kw", v: "int" }, { t: "plain", v: " a, " },
+      { t: "kw", v: "int" }, { t: "plain", v: " b)" },
+      { t: "blank", id: 13, w: "25px", ans: ";", hint: ";" },
+      { t: "plain", v: "   " }, { t: "comment", v: "// 선언 (정의 아님)" },
+    ]
+  },
+];
+
+// ─── 렌더링 ──────────────────────────────────────────────
+let answered = 0;
+const TOTAL = OX.length + FILL.length;
+document.getElementById("total-count").textContent = TOTAL;
+
+function updateProgress() {
+  document.getElementById("prog").style.width = (answered / TOTAL * 100) + "%";
+  document.getElementById("correct-count").textContent =
+    document.querySelectorAll(".card.correct").length;
+  if (answered === TOTAL) showResult();
+}
+
+// OX 렌더
+const oxList = document.getElementById("ox-list");
+OX.forEach((item, i) => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="q-num">OX · Q${i + 1}</div>
+    <div class="q-text">${item.q}</div>
+    <div class="ox-btns">
+      <button class="ox-btn" data-val="true">⭕</button>
+      <button class="ox-btn" data-val="false">❌</button>
+    </div>
+    <div class="feedback"></div>
+  `;
+  const btns = card.querySelectorAll(".ox-btn");
+  const fb = card.querySelector(".feedback");
+
+  btns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const chosen = btn.dataset.val === "true";
+      btns.forEach(b => b.disabled = true);
+      answered++;
+
+      if (chosen === item.ans) {
+        card.classList.add("correct");
+        btn.classList.add("selected-o");
+        fb.className = "feedback ok show";
+        fb.textContent = "✅ 정답입니다!";
+      } else {
+        card.classList.add("wrong");
+        btn.classList.add("selected-x");
+        fb.className = "feedback ng show";
+        fb.innerHTML = item.exp;
+      }
+      updateProgress();
+    });
+  });
+  oxList.appendChild(card);
+});
+
+// 빈칸 렌더
+const fillList = document.getElementById("fill-list");
+
+function renderToken(t) {
+  if (t.t === "blank") {
+    return `<input class="blank-input" data-id="${t.id}" data-ans="${t.ans}" style="width:${t.w}" placeholder="?" spellcheck="false">`;
+  }
+  const map = { kw:"code-kw", fn:"code-fn", str:"code-str", num:"code-num", comment:"code-comment", type:"code-type" };
+  const cls = map[t.t] || "";
+  const escaped = t.v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return cls ? `<span class="${cls}">${escaped}</span>` : escaped;
+}
+
+FILL.forEach((item, i) => {
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const codeHtml = item.code.map(renderToken).join("");
+  const blankIds = item.code.filter(t => t.t === "blank").map(t => t.id);
+
+  card.innerHTML = `
+    <div class="q-num">빈칸 채우기 · Q${i + 1}</div>
+    <div class="q-text">${item.q}</div>
+    <div class="blank-wrap">${codeHtml}</div>
+    <button class="submit-btn">확인하기</button>
+    <div class="feedback"></div>
+  `;
+
+  const btn = card.querySelector(".submit-btn");
+  const fb  = card.querySelector(".feedback");
+
+  btn.addEventListener("click", () => {
+    const inputs = card.querySelectorAll(".blank-input");
+    let allCorrect = true;
+
+    inputs.forEach(inp => {
+      const user = inp.value.trim().replace(/\s+/g, " ");
+      const correct = inp.dataset.ans.trim();
+      if (user === correct) {
+        inp.classList.add("correct-inp");
+      } else {
+        inp.classList.add("wrong-inp");
+        allCorrect = false;
+      }
+      inp.disabled = true;
+    });
+
+    btn.disabled = true;
+    answered++;
+
+    if (allCorrect) {
+      card.classList.add("correct");
+      fb.className = "feedback ok show";
+      fb.textContent = "✅ 완벽합니다!";
+    } else {
+      card.classList.add("wrong");
+      fb.className = "feedback ng show";
+      const hints = item.code.filter(t => t.t === "blank").map(t =>
+        `<span style="color:var(--text-dim)">빈칸 ${item.code.filter(tt=>tt.t==="blank").indexOf(t)+1}:</span> <code style="color:var(--yellow)">${t.ans}</code>`
+      ).join("  ");
+      fb.innerHTML = `❌ 틀렸습니다. 정답: ${hints}`;
+    }
+    updateProgress();
+  });
+
+  // Enter 키로 제출
+  card.querySelectorAll(".blank-input").forEach(inp => {
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") btn.click(); });
+  });
+
+  fillList.appendChild(card);
+});
+
+// ─── 결과 ──────────────────────────────────────────────
+function showResult() {
+  const correct = document.querySelectorAll(".card.correct").length;
+  const panel = document.getElementById("result");
+  const pct = Math.round(correct / TOTAL * 100);
+  panel.classList.add("show");
+  document.getElementById("result-score").textContent = `${correct} / ${TOTAL}`;
+
+  const msgs = [
+    [100, "🏆 완벽! 포인터 마스터입니다."],
+    [80,  "💪 훌륭해요! 거의 다 맞혔네요."],
+    [60,  "📖 좋아요. 틀린 부분만 다시 보면 완벽해요."],
+    [0,   "🔁 핵심 개념을 한 번 더 복습해봐요!"],
+  ];
+  document.getElementById("result-msg").textContent =
+    msgs.find(([p]) => pct >= p)[1];
+
+  panel.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+</script>
+</body>
+</html>

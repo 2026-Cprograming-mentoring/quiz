@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C 프로그래밍 중간고사 복습</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f;
+    --surface: #0d1220;
+    --surface2: #131928;
+    --surface3: #0a0f1c;
+    --border: #1e2d4a;
+    --accent: #3d82f6;
+    --accent2: #60a5fa;
+    --gold: #f0b429;
+    --green: #22d3a6;
+    --red: #f26464;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --text: #e2ecff;
+    --muted: #6b82a8;
+    --code: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(61,130,246,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(61,130,246,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 100px;
+  }
+
+  /* ── HEADER ── */
+  header { text-align: center; margin-bottom: 36px; animation: fadeDown .6s ease both; }
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .15em;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    background: rgba(61,130,246,.08);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    background: linear-gradient(120deg, #e2ecff 30%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle { margin-top: 8px; color: var(--muted); font-size: 13px; font-weight: 300; }
+
+  /* ── CHAPTER TABS ── */
+  .tab-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    padding: 7px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { border-color: var(--accent); background: rgba(61,130,246,.15); color: var(--accent2); }
+  .tab.ch1.active { border-color: var(--green);  background: rgba(34,211,166,.1); color: var(--green); }
+  .tab.ch2.active { border-color: var(--purple);  background: rgba(167,139,250,.1); color: var(--purple); }
+  .tab.ch3.active { border-color: var(--gold);    background: rgba(240,180,41,.08); color: var(--gold); }
+  .tab.ch4.active { border-color: var(--orange);  background: rgba(251,146,60,.08); color: var(--orange); }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-bottom: 32px; }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .progress-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .chapter-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 2px;
+    background: var(--surface2);
+  }
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 2px;
+    height: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width .5s ease;
+    width: 0%;
+  }
+
+  /* ── CHAPTER DIVIDER ── */
+  .ch-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 40px 0 20px;
+    animation: fadeUp .4s ease both;
+  }
+  .ch-header:first-child { margin-top: 0; }
+  .ch-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .12em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ch-pill.p1 { background: rgba(34,211,166,.12); color: var(--green);  border: 1px solid rgba(34,211,166,.3); }
+  .ch-pill.p2 { background: rgba(167,139,250,.12); color: var(--purple); border: 1px solid rgba(167,139,250,.3); }
+  .ch-pill.p3 { background: rgba(240,180,41,.1);   color: var(--gold);   border: 1px solid rgba(240,180,41,.25); }
+  .ch-pill.p4 { background: rgba(251,146,60,.1);   color: var(--orange); border: 1px solid rgba(251,146,60,.25); }
+  .ch-line { flex: 1; height: 1px; background: var(--border); }
+  .ch-title { font-size: 13px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+    animation: fadeUp .45s ease both;
+    transition: border-color .3s;
+  }
+  .q-card:hover { border-color: #2a4070; }
+  .q-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); margin-bottom: 10px; letter-spacing: .1em; }
+  .q-num.c1 { color: var(--green);  }
+  .q-num.c2 { color: var(--purple); }
+  .q-num.c3 { color: var(--gold);   }
+  .q-num.c4 { color: var(--orange); }
+  .q-text { font-size: 15.5px; font-weight: 700; line-height: 1.75; margin-bottom: 22px; color: var(--text); }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(167,139,250,.12);
+    color: var(--code);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: .88em;
+  }
+  .code-block {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(167,139,250,.07);
+    color: var(--code);
+    border: 1px solid rgba(167,139,250,.2);
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 8px 0 20px;
+    white-space: pre;
+    display: block;
+    overflow-x: auto;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 9px; }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer;
+    transition: all .2s ease;
+    font-size: 14px;
+    line-height: 1.5;
+    user-select: none;
+  }
+  .opt:hover:not(.locked) { border-color: var(--accent); background: rgba(61,130,246,.08); transform: translateX(4px); }
+  .opt-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .opt.correct { border-color: var(--green); background: rgba(34,211,166,.1); }
+  .opt.correct .opt-key { background: var(--green); color: #000; border-color: var(--green); }
+  .opt.wrong   { border-color: var(--red);   background: rgba(242,100,100,.08); }
+  .opt.wrong   .opt-key { background: var(--red);   color: #fff; border-color: var(--red); }
+  .opt.locked  { cursor: default; }
+
+  /* ── CODE INPUT ── */
+  .code-input-wrap { position: relative; margin-bottom: 12px; }
+  .code-input {
+    width: 100%;
+    min-height: 120px;
+    background: #0a0e1a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: #c4d4ff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 14px 16px;
+    resize: vertical;
+    outline: none;
+    transition: border-color .2s;
+    tab-size: 2;
+  }
+  .code-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(61,130,246,.12); }
+  .code-input.success { border-color: var(--green); }
+  .code-input.fail    { border-color: var(--red); }
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: .1em;
+  }
+  .hint-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .hint-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(167,139,250,.08);
+    border: 1px solid rgba(167,139,250,.2);
+    color: var(--purple);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .btn-submit {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 20px;
+    background: rgba(61,130,246,.15);
+    color: var(--accent2);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    margin-top: 4px;
+  }
+  .btn-submit:hover { background: var(--accent); color: #fff; }
+  .btn-submit:disabled { opacity: .4; cursor: default; }
+  .sample-box {
+    display: none;
+    margin-top: 14px;
+    background: rgba(34,211,166,.06);
+    border: 1px solid rgba(34,211,166,.25);
+    border-radius: 4px;
+    padding: 12px 16px;
+  }
+  .sample-box.show { display: block; animation: fadeUp .3s ease both; }
+  .sample-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--green); letter-spacing: .12em; margin-bottom: 8px; }
+  .sample-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    color: #9effd8;
+    line-height: 1.65;
+    white-space: pre-wrap;
+  }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    margin-top: 14px;
+    padding: 11px 15px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.65;
+    display: none;
+  }
+  .feedback.show { display: block; animation: fadeUp .3s ease both; }
+  .feedback.ok { background: rgba(34,211,166,.1); border: 1px solid rgba(34,211,166,.3); color: #7fffdd; }
+  .feedback.no { background: rgba(242,100,100,.08); border: 1px solid rgba(242,100,100,.3); color: #ffaaaa; }
+  .feedback strong { color: inherit; }
+
+  /* ── RESULT PANEL ── */
+  #result {
+    display: none;
+    text-align: center;
+    padding: 56px 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    animation: fadeUp .5s ease both;
+  }
+  .score-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 30px;
+    font-weight: 700;
+  }
+  .score-ring.great { border-color: var(--green); color: var(--green); box-shadow: 0 0 30px rgba(34,211,166,.25); }
+  .score-ring.mid   { border-color: var(--gold);  color: var(--gold);  box-shadow: 0 0 30px rgba(240,180,41,.2); }
+  .score-ring.low   { border-color: var(--red);   color: var(--red);   box-shadow: 0 0 30px rgba(242,100,100,.2); }
+  #result h2 { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+  #result > p { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; }
+  .score-summary { display: flex; justify-content: center; gap: 28px; margin: 24px 0; }
+  .score-item { text-align: center; }
+  .score-item .val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; }
+  .score-item .lbl { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: .1em; }
+  .v-correct { color: var(--green); }
+  .v-wrong   { color: var(--red);   }
+  .v-total   { color: var(--accent); }
+
+  /* Chapter breakdown in result */
+  .ch-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin: 20px 0 28px;
+    text-align: left;
+  }
+  .ch-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+  .ch-stat-name { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .ch-stat-score { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 26px;
+    background: var(--accent);
+    color: #fff;
+    border: none; border-radius: 4px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13.5px; font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(61,130,246,.3); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-left: 10px;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--text); background: transparent; box-shadow: none; transform: none; }
+
+  .actions { text-align: center; margin-top: 28px; }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(14px);  } to { opacity:1; transform:translateY(0); } }
+
+  @media (max-width: 600px) {
+    .q-card { padding: 20px 16px; }
+    .tab { font-size: 10px; padding: 6px 10px; }
+    .score-summary { gap: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tag">C PROGRAMMING · MIDTERM REVIEW</div>
+    <h1>중간고사 복습</h1>
+    <p class="subtitle">변수 · 데이터형 · 입출력 · 함수 · 코드 작성 / 총 48문제</p>
+  </header>
+
+  <div class="tab-bar" id="tabBar">
+    <button class="tab active"    onclick="setTab(0)">📋 전체 (48)</button>
+    <button class="tab ch1"       onclick="setTab(1)">🟢 CH.01 변수·데이터형 (15)</button>
+    <button class="tab ch2"       onclick="setTab(2)">🟣 CH.02 표준 입출력 (15)</button>
+    <button class="tab ch3"       onclick="setTab(3)">🟡 CH.03 함수 (10)</button>
+    <button class="tab ch4"       onclick="setTab(4)">🟠 CH.04 코드 작성 (8)</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <div class="progress-text" id="progText">0 / 48</div>
+      <div class="chapter-badge" id="chapterBadge">MIDTERM REVIEW</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progBar"></div>
+    </div>
+  </div>
+
+  <div id="quiz"></div>
+  <div id="result"></div>
+  <div class="actions" id="actions" style="display:none">
+    <button class="btn" onclick="showResult()">결과 보기 →</button>
+    <button class="btn btn-ghost" onclick="scrollToTop()">↑ 처음으로</button>
+  </div>
+
+</div>
+<script>
+/* ══════════════════════════════════════
+   QUESTION BANK
+   ch: 1=변수/데이터형  2=입출력  3=함수  4=코드작성
+   type: 'mc' | 'code'
+══════════════════════════════════════ */
+const questions = [
+  // ─────────────────────────────────────
+  // CH.01 변수와 데이터 형식 (15문제)
+  // ─────────────────────────────────────
+  {ch:1,type:'mc',
+   q:"C 프로그램에서 변수(variable)란 무엇인가?",
+   opts:["프로그램 실행 속도를 결정하는 요소","값을 저장할 수 있는 메모리 공간에 붙인 이름 또는 공간 자체","화면에 출력하는 명령어","소스 코드의 주석을 의미한다"],
+   ans:1,
+   exp:"변수란 <strong>값을 저장할 수 있는 메모리 공간에 붙인 이름 또는 공간 자체</strong>입니다. 요리의 그릇처럼, 담고자 하는 값의 종류에 따라 다양한 형식의 변수를 사용합니다."},
+  {ch:1,type:'mc',
+   q:"다음 중 정수형 변수 a와 b를 동시에 선언하는 올바른 방법은?",
+   opts:["<code>int a, float b;</code>","<code>int a; int b;</code> 또는 <code>int a, b;</code>","<code>int a float b;</code>","<code>a = int; b = int;</code>"],
+   ans:1,
+   exp:"같은 데이터 형식의 변수는 개별 선언(<code>int a; int b;</code>)하거나 콤마(,)로 연결(<code>int a, b;</code>)하여 선언할 수 있습니다."},
+  {ch:1,type:'mc',
+   q:"정수형 변수 <code>a</code>에 실수 <code>123.45</code>를 대입하면 <code>a</code>에 저장되는 값은?",
+   opts:["123.45","123","124","컴파일 오류 발생"],
+   ans:1,
+   exp:"정수형 변수에 실수를 대입하면 소수점 이하가 <strong>버려지고</strong> 정수 부분만 저장됩니다. 따라서 <code>a</code>에는 <strong>123</strong>이 저장됩니다."},
+  {ch:1,type:'mc',
+   q:"<code>a = b = c = d = 100;</code> 에서 대입 연산자(=)의 처리 순서는?",
+   opts:["왼쪽에서 오른쪽으로 순서대로","동시에 모두 처리","오른쪽에서 왼쪽으로 순서대로","컴파일러가 임의로 결정"],
+   ans:2,
+   exp:"대입 연산자(=)는 <strong>오른쪽에서 왼쪽</strong>으로 처리됩니다. d=100 → c=d → b=c → a=b 순으로 실행되어 모두 100이 됩니다."},
+  {ch:1,type:'mc',
+   q:"1비트(bit)가 표현할 수 있는 가짓수는?",
+   opts:["1가지","2가지","4가지","8가지"],
+   ans:1,
+   exp:"비트는 0(OFF)과 1(ON)만 가질 수 있으므로 <strong>2가지</strong>를 표현합니다. n비트는 2ⁿ가지를 표현합니다."},
+  {ch:1,type:'mc',
+   q:"1바이트(byte)는 몇 비트인가? 그리고 표현 가능한 값의 개수는?",
+   opts:["4비트, 16가지","8비트, 256가지","16비트, 65536가지","8비트, 128가지"],
+   ans:1,
+   exp:"1바이트 = <strong>8비트</strong>, 2⁸ = <strong>256</strong>가지의 값을 표현할 수 있습니다."},
+  {ch:1,type:'mc',
+   q:"2진수 <code>1001 0011</code>을 10진수로 변환하면?",
+   opts:["146","147","148","156"],
+   ans:1,
+   exp:"128×1 + 64×0 + 32×0 + 16×1 + 8×0 + 4×0 + 2×1 + 1×1 = 128+16+2+1 = <strong>147</strong>"},
+  {ch:1,type:'mc',
+   q:"<code>int</code>형의 크기(바이트)와 값의 범위는?",
+   opts:["2바이트, –32768 ~ 32767","4바이트, –2³¹ ~ 2³¹–1 (약 ±21억)","8바이트, –2⁶³ ~ 2⁶³–1","1바이트, –128 ~ 127"],
+   ans:1,
+   exp:"<code>int</code>형은 <strong>4바이트</strong>, 범위는 <strong>–2³¹ ~ 2³¹–1 (약 ±21억)</strong>입니다."},
+  {ch:1,type:'mc',
+   q:"<code>float</code>형과 <code>double</code>형의 차이로 가장 올바른 설명은?",
+   opts:["float은 정수, double은 실수를 저장한다","float(4바이트)은 약 7자리, double(8바이트)은 약 16자리 정밀도를 제공한다","두 형식의 크기는 동일하다","double은 음수를 저장할 수 없다"],
+   ans:1,
+   exp:"<code>float</code>은 4바이트로 소수점 아래 약 <strong>7자리</strong>, <code>double</code>은 8바이트로 약 <strong>16자리</strong>의 정밀도를 나타냅니다."},
+  {ch:1,type:'mc',
+   q:"아스키코드에서 영문 소문자 'a'의 10진수 값은?",
+   opts:["65","97","48","90"],
+   ans:1,
+   exp:"대문자 A~Z는 65~90, <strong>소문자 a~z는 97~122</strong>에 대응합니다. 따라서 'a'는 <strong>97</strong>입니다."},
+  {ch:1,type:'mc',
+   q:"다음 코드의 실행 결과는?\n<code>int a=100, b=200; float result; result = a / b;</code>",
+   opts:["0.500000","0.000000","1.000000","0.5"],
+   ans:1,
+   exp:"<code>a</code>와 <code>b</code>가 모두 <strong>정수형</strong>이므로 a/b는 정수 나눗셈 → 0이 됩니다. 이 0이 float result에 저장되어 결과는 <strong>0.000000</strong>입니다."},
+  {ch:1,type:'mc',
+   q:"<code>5 + 3 * 4</code> 를 계산하면?",
+   opts:["32","17","20","12"],
+   ans:1,
+   exp:"곱셈(*)이 덧셈(+)보다 우선순위가 높으므로 먼저 3×4=12, 그 다음 5+12 = <strong>17</strong>이 됩니다."},
+  {ch:1,type:'mc',
+   q:"<code>a *= 5;</code> 와 동일한 표현은?",
+   opts:["<code>a = 5;</code>","<code>a = a * 5;</code>","<code>a = a + 5;</code>","<code>a * 5 = a;</code>"],
+   ans:1,
+   exp:"<code>a *= 5</code>는 <strong><code>a = a * 5</code></strong>와 완전히 동일합니다. 복합 대입 연산자(+=, -=, *=, /=, %=)는 코드를 간결하게 만들어 줍니다."},
+  {ch:1,type:'mc',
+   q:"다음 코드에서 최종 출력 값은?\n<code>int a=10, b; b = a++; printf(\"%d\", b);</code>",
+   opts:["11","10","9","컴파일 오류"],
+   ans:1,
+   exp:"<code>a++</code>는 <strong>후위 증가</strong>: 현재 값(10)을 먼저 b에 대입한 후 a를 증가시킵니다. 따라서 b = <strong>10</strong>이 출력되고, 이후 a는 11이 됩니다."},
+  {ch:1,type:'mc',
+   q:"강제 형 변환(casting)으로 정수 나눗셈에서 실수 결과를 얻으려면?",
+   opts:["<code>result = a / b;</code>","<code>result = (float)a / b;</code>","<code>result = float(a / b);</code>","<code>result = a / (int)b;</code>"],
+   ans:1,
+   exp:"<code>(float)a</code>처럼 변수 앞에 괄호로 원하는 형식을 적어 <strong>강제 형 변환</strong>합니다. a가 실수로 변환되면 실수÷정수 = 실수 계산이 이루어집니다."},
+
+  // ─────────────────────────────────────
+  // CH.02 표준 입출력 함수 (15문제)
+  // ─────────────────────────────────────
+  {ch:2,type:'mc',
+   q:"printf( ) 함수를 사용하기 위해 반드시 포함해야 하는 헤더 파일은?",
+   opts:["<code>stdlib.h</code>","<code>stdio.h</code>","<code>string.h</code>","<code>math.h</code>"],
+   ans:1,
+   exp:"<strong>stdio.h</strong>(Standard Input Output)는 printf( ), scanf_s( ) 등 표준 입출력 함수가 정의된 헤더 파일입니다."},
+  {ch:2,type:'mc',
+   q:"다음 코드의 출력 결과로 올바른 것은?\n<code>printf(\"123\\n\");\nprintf(\"456789\\n\");</code>",
+   opts:["123456789","줄 바뀌어 123 / 456789로 출력","123 456789 (공백으로 구분)","오류 발생"],
+   ans:1,
+   exp:"<strong>\\n</strong>은 줄 바꿈 제어 문자입니다. 첫 번째 printf가 '123'을 출력 후 줄이 바뀌고, 두 번째 printf가 '456789'를 출력합니다."},
+  {ch:2,type:'mc',
+   q:"printf( ) 함수에서 큰따옴표(\") 자체를 출력하려면 어떤 제어 문자를 사용해야 하나요?",
+   opts:["<code>\\\"</code> (quote)","<code>\\'</code> (apostrophe)","<code>\\\\</code> (back slash)","<code>\\a</code> (bell)"],
+   ans:0,
+   exp:"<strong>\\\"</strong>는 큰따옴표 문자열 안에서 큰따옴표 자체를 출력할 때 사용합니다."},
+  {ch:2,type:'mc',
+   q:"Tab 키와 동일한 기능을 하는 제어 문자와, 커서를 1열로 이동시키는 제어 문자를 순서대로 고른 것은?",
+   opts:["<code>\\t</code>, <code>\\r</code>","<code>\\n</code>, <code>\\b</code>","<code>\\t</code>, <code>\\n</code>","<code>\\b</code>, <code>\\r</code>"],
+   ans:0,
+   exp:"<strong>\\t</strong>는 tab, <strong>\\r</strong>은 carriage return(커서를 줄의 맨 앞으로 이동시켜 덮어씀)입니다."},
+  {ch:2,type:'mc',
+   q:"정수형(signed int) 값을 printf( )로 출력할 때 사용하는 형식 지정자는?",
+   opts:["<code>%f</code>","<code>%s</code>","<code>%d</code>","<code>%c</code>"],
+   ans:2,
+   exp:"<strong>%d</strong>는 signed int를 10진수로 출력하는 형식 지정자입니다. 실수는 %f, 문자는 %c, 문자열은 %s를 사용합니다."},
+  {ch:2,type:'mc',
+   q:"형식 지정자와 출력할 값의 개수가 일치하지 않을 때 발생하는 현상은?",
+   opts:["항상 컴파일 오류가 발생한다","지정자가 적으면 뒤 값이 출력 안 되고, 지정자가 많으면 가비지값이 출력된다","숫자가 더 많으면 자동으로 합산하여 출력된다","항상 정상 출력된다"],
+   ans:1,
+   exp:"형식 지정자와 숫자는 <strong>1:1 대응</strong>이어야 합니다. 지정자가 많으면 대응할 값이 없어 <strong>가비지값(쓰레기값)</strong>이 출력됩니다."},
+  {ch:2,type:'mc',
+   q:"다음 코드의 출력 결과는?\n<code>printf(\"%5d\", 358);</code>",
+   opts:["<code>358__</code> (뒤에 공백 2개)","<code>00358</code>","<code>  358</code> (앞에 공백 2개, 오른쪽 정렬)","<code>358</code> (변화 없음)"],
+   ans:2,
+   exp:"<strong>%5d</strong>는 전체 5자리를 확보하고 오른쪽 정렬합니다. 358은 3자리이므로 앞에 공백 2개가 붙어 <code>  358</code>이 출력됩니다."},
+  {ch:2,type:'mc',
+   q:"<code>%05d</code>를 사용하여 358을 출력하면 결과는?",
+   opts:["<code>358  </code>","<code>  358</code>","<code>00358</code>","<code>358.00</code>"],
+   ans:2,
+   exp:"<strong>%05d</strong>는 전체 5자리를 확보하되 빈칸을 <strong>0으로 채워</strong> 오른쪽 정렬합니다. 따라서 <code>00358</code>이 출력됩니다."},
+  {ch:2,type:'mc',
+   q:"실수형(float) 데이터를 소수점 이하 2자리까지만 출력하는 형식 지정자는?",
+   opts:["<code>%2f</code>","<code>%.2f</code>","<code>%f.2</code>","<code>%-2f</code>"],
+   ans:1,
+   exp:"<strong>%.2f</strong>에서 점(.) 뒤의 숫자가 소수점 이하 자릿수입니다. 예: 358.123456 → <code>358.12</code>"},
+  {ch:2,type:'mc',
+   q:"<code>%7.3f</code>로 358.123456을 출력하면 결과는?",
+   opts:["<code>358.1</code>","<code>358.123</code> (전체 7자리, 소수 3자리)","<code>0358.123</code>","<code>358.123456</code>"],
+   ans:1,
+   exp:"<strong>%7.3f</strong>는 전체 7자리를 확보하고 소수 3자리까지 출력합니다. 358.123은 7자리이므로 <code>358.123</code>이 출력됩니다."},
+  {ch:2,type:'mc',
+   q:"scanf_s( ) 함수가 등장한 주된 이유는?",
+   opts:["scanf( )보다 출력 속도가 빠르기 때문에","보안에 취약한 scanf( )를 보완하기 위해 SDL 검사 기능과 함께 도입되었다","scanf( )가 정수형 입력을 지원하지 않기 때문에","Visual Studio 2019 이후 scanf( )가 삭제되었기 때문에"],
+   ans:1,
+   exp:"<strong>scanf_s( )</strong>는 기존 scanf( )의 <strong>보안 취약점을 보완</strong>하기 위해 Visual Studio 2013부터 SDL 검사 기능과 함께 도입된 안전한 입력 함수입니다."},
+  {ch:2,type:'mc',
+   q:"scanf_s( )로 문자(char) 또는 문자열을 입력받을 때 추가로 필요한 인자는?",
+   opts:["<code>strlen(변수명)</code>","<code>sizeof(변수명)</code> 또는 <code>sizeof(자료형)</code>","<code>size(변수명)</code>","<code>length(변수명)</code>"],
+   ans:1,
+   exp:"문자나 문자열 입력 시 버퍼 오버플로 방지를 위해 <strong>sizeof(변수명)</strong>을 추가로 전달해야 합니다. 예: <code>scanf_s(\"%c\", &ch, sizeof(ch));</code>"},
+  {ch:2,type:'mc',
+   q:"배열을 이용해 문자열을 scanf_s( )로 입력받을 때 주소 연산자(&)를 생략하는 이유는?",
+   opts:["scanf_s( )는 &를 문법적으로 지원하지 않으므로","배열 이름 자체가 첫 번째 원소의 메모리 주소를 나타내기 때문에","컴파일러가 자동으로 &를 추가해주므로","문자열은 메모리 주소가 필요 없으므로"],
+   ans:1,
+   exp:"C 언어에서 <strong>배열 이름은 곧 배열의 첫 번째 원소 주소</strong>입니다. 따라서 <code>char str[10];</code>에서 str만 써도 주소가 전달됩니다."},
+  {ch:2,type:'mc',
+   q:"scanf_s( ) 함수에서 사용할 수 없는 것은?",
+   opts:["형식 지정자 <code>%d</code>, <code>%f</code>","제어 문자 <code>\\n</code>, <code>\\r</code>","형식 지정자 <code>%c</code>, <code>%s</code>","주소 연산자 <code>&변수명</code>"],
+   ans:1,
+   exp:"<strong>제어 문자(\\n, \\r 등)는 printf( ) 전용 출력 형식</strong>이므로 scanf_s( )에서는 사용할 수 없습니다."},
+  {ch:2,type:'mc',
+   q:"아스키코드에서 알파벳 대문자 'A'~'Z'의 10진수 범위와 소문자 'a'의 값은?",
+   opts:["A~Z: 48~57 / 'a': 97","A~Z: 65~90 / 'a': 97","A~Z: 65~90 / 'a': 65","A~Z: 97~122 / 'a': 97"],
+   ans:1,
+   exp:"<strong>대문자 A~Z는 65~90</strong>, <strong>소문자 a~z는 97~122</strong>. 숫자 0~9는 48~57입니다."},
+
+  // ─────────────────────────────────────
+  // CH.03 함수 (10문제)
+  // ─────────────────────────────────────
+  {ch:3,type:'mc',
+   q:"함수(function)에 대한 설명으로 올바른 것은?",
+   opts:["변수에 값을 저장하는 공간","특정 작업을 수행하는 독립적인 코드 블록","프로그램 실행 속도를 결정하는 설정값","반드시 값을 반환해야 하는 구조"],
+   ans:1,
+   exp:"함수는 <strong>특정 작업을 수행하는 독립적인 코드 블록</strong>으로, 코드 재사용성과 가독성을 높여줍니다."},
+  {ch:3,type:'mc',
+   q:"C 프로그램에서 실행이 시작되는 함수는?",
+   opts:["<code>start()</code>","<code>begin()</code>","<code>main()</code>","<code>run()</code>"],
+   ans:2,
+   exp:"C 프로그램은 항상 <strong>main()</strong> 함수에서 시작됩니다. 운영체제가 프로그램을 실행할 때 가장 먼저 main()을 호출합니다."},
+  {ch:3,type:'mc',
+   q:"반환형이 <code>void</code>인 함수에 대한 설명으로 올바른 것은?",
+   opts:["void는 모든 자료형을 반환할 수 있다","이 함수는 실행 후 값을 반환하지 않는다","반드시 <code>return 0;</code>으로 끝나야 한다","매개변수를 가질 수 없다"],
+   ans:1,
+   exp:"<strong>void</strong>는 '없음'을 의미합니다. void 반환형 함수는 값을 돌려주지 않으며, return문을 생략하거나 빈 <code>return;</code>을 사용합니다."},
+  {ch:3,type:'mc',
+   q:"함수 프로토타입(선언)이 필요한 이유로 가장 올바른 것은?",
+   opts:["함수의 실행 속도를 높이기 위해","컴파일러에게 함수의 이름·반환형·매개변수를 미리 알리기 위해","함수를 자동으로 호출하기 위해","메모리 사용량을 줄이기 위해"],
+   ans:1,
+   exp:"함수를 정의하기 전에 호출하려면 <strong>프로토타입(선언)</strong>이 필요합니다. 컴파일러가 함수의 형태를 미리 알아야 오류 없이 컴파일할 수 있습니다."},
+  {ch:3,type:'mc',
+   q:"<code>int add(int a, int b);</code> 선언에서 <code>a</code>, <code>b</code>는 무엇인가?",
+   opts:["인수(argument)","반환값(return value)","매개변수(parameter)","지역변수(local variable)"],
+   ans:2,
+   exp:"함수 정의/선언에서 괄호 안의 변수는 <strong>매개변수(parameter)</strong>입니다. 함수 호출 시 전달하는 실제 값은 인수(argument)라고 구분합니다."},
+  {ch:3,type:'mc',
+   q:"지역변수(local variable)에 대한 설명으로 올바른 것은?",
+   opts:["프로그램 전체 어디서든 접근 가능하다","함수 밖에서 선언되어 모든 함수가 공유한다","선언된 함수 블록 내에서만 유효하며 함수 종료 시 사라진다","static 키워드와 동일한 의미이다"],
+   ans:2,
+   exp:"지역변수는 해당 함수(또는 블록) 내에서만 사용할 수 있고, <strong>함수 실행이 끝나면 메모리에서 제거</strong>됩니다. 다른 함수에서는 접근할 수 없습니다."},
+  {ch:3,type:'mc',
+   q:"전역변수(global variable)에 대한 설명으로 올바른 것은?",
+   opts:["특정 함수 안에서만 사용 가능하다","함수 밖에 선언되어 프로그램 전체에서 접근 가능하다","선언 시 반드시 초기화해야 한다","main() 함수 내에서만 사용 가능하다"],
+   ans:1,
+   exp:"전역변수는 <strong>모든 함수 바깥에서 선언</strong>되며, 프로그램이 실행되는 동안 계속 유지되고 어떤 함수에서도 접근할 수 있습니다."},
+  {ch:3,type:'mc',
+   q:"C 언어의 함수 호출 방식인 Call by Value에 대한 설명은?",
+   opts:["원본 변수의 주소를 전달하여 함수 내에서 원본을 직접 수정한다","변수의 값을 복사하여 전달하므로 함수 내 변경이 원본에 영향을 주지 않는다","함수 호출 없이 코드를 복사·붙여넣기 하는 방식이다","포인터를 이용하는 방식과 동일하다"],
+   ans:1,
+   exp:"<strong>Call by Value(값 전달)</strong>는 인수의 값을 복사하여 매개변수에 전달합니다. 함수 내부에서 매개변수를 변경해도 <strong>원본 변수는 바뀌지 않습니다</strong>."},
+  {ch:3,type:'mc',
+   q:"다음 코드에서 <code>add(3, 4)</code> 호출 결과로 반환되는 값은?\n<code>int add(int a, int b) { return a + b; }</code>",
+   opts:["0","3","4","7"],
+   ans:3,
+   exp:"add(3, 4)에서 a=3, b=4가 전달되고, <code>return a + b</code>는 3 + 4 = <strong>7</strong>을 반환합니다."},
+  {ch:3,type:'mc',
+   q:"재귀함수(recursive function)란?",
+   opts:["다른 파일에 있는 함수를 호출하는 것","자기 자신을 호출하는 함수","반환값이 없는 함수","매개변수가 없는 함수"],
+   ans:1,
+   exp:"재귀함수는 함수 내부에서 <strong>자기 자신을 호출</strong>하는 함수입니다. 반드시 <strong>종료 조건(base case)</strong>을 포함해야 무한 루프를 방지할 수 있습니다."},
+
+  // ─────────────────────────────────────
+  // CH.04 코드 작성 연습 (8문제)
+  // ─────────────────────────────────────
+  {ch:4,type:'code',
+   q:"정수형 변수 <code>num</code>을 선언하고 <code>42</code>로 초기화하는 코드를 한 줄로 작성하세요.",
+   hint:["int","num","42","="],
+   keywords:['int','num','42'],
+   sample:"int num = 42;",
+   exp:"<strong>int</strong>는 정수형 자료형, <strong>num</strong>은 변수 이름, <strong>= 42</strong>로 선언과 동시에 초기화합니다."},
+  {ch:4,type:'code',
+   q:"<code>float</code>형 변수 <code>pi</code>를 선언하고 <code>3.14</code>로 초기화하는 코드를 작성하세요.",
+   hint:["float","pi","3.14"],
+   keywords:['float','pi','3.14'],
+   sample:"float pi = 3.14f;",
+   exp:"실수 리터럴 뒤에 <strong>f</strong>를 붙이면 float형 상수가 됩니다. 붙이지 않으면 double로 간주되어 경고가 발생할 수 있습니다."},
+  {ch:4,type:'code',
+   q:"<code>printf</code>를 사용하여 <code>Hello, C!</code>를 출력하고 줄 바꿈하는 코드를 작성하세요.",
+   hint:["printf","Hello, C!","\\n"],
+   keywords:['printf','hello'],
+   sample:'printf("Hello, C!\\n");',
+   exp:"<strong>printf(\"Hello, C!\\n\");</strong> — \\n은 줄 바꿈 제어 문자입니다."},
+  {ch:4,type:'code',
+   q:"<code>scanf_s</code>를 사용하여 정수형 변수 <code>num</code>의 값을 입력받는 코드를 작성하세요.",
+   hint:["scanf_s","%d","&num"],
+   keywords:['scanf_s','%d','&num'],
+   sample:'scanf_s("%d", &num);',
+   exp:"<strong>&num</strong>은 변수 num의 메모리 주소를 전달합니다. scanf_s는 이 주소에 입력값을 저장합니다."},
+  {ch:4,type:'code',
+   q:"두 정수 <code>a</code>, <code>b</code>를 더한 결과를 반환하는 <code>add</code> 함수를 작성하세요.",
+   hint:["int add(int a, int b)","return","a + b"],
+   keywords:['int','add','return','+'],
+   sample:"int add(int a, int b) {\n    return a + b;\n}",
+   exp:"반환형 <strong>int</strong>, 함수 이름 <strong>add</strong>, 두 int 매개변수 a·b를 받아 <strong>return a + b;</strong>로 합계를 반환합니다."},
+  {ch:4,type:'code',
+   q:"<code>\"Hello!\"</code>를 출력하는 <code>void</code> 함수 <code>sayHello</code>를 작성하세요.",
+   hint:["void sayHello()","printf","Hello!"],
+   keywords:['void','sayhello','printf'],
+   sample:'void sayHello() {\n    printf("Hello!\\n");\n}',
+   exp:"반환값이 없으면 반환형을 <strong>void</strong>로 선언합니다. 함수 본문에서 printf로 출력합니다."},
+  {ch:4,type:'code',
+   q:"정수 변수 <code>a = 7</code>, <code>b = 2</code>를 선언하고, <strong>강제 형 변환(casting)</strong>을 이용해 실수 나눗셈 결과를 <code>float result</code>에 저장하는 코드를 작성하세요.",
+   hint:["(float)a","/ b","float result"],
+   keywords:['float','result','(float)'],
+   sample:"int a = 7, b = 2;\nfloat result = (float)a / b;",
+   exp:"<strong>(float)a</strong>로 a를 실수로 형 변환한 뒤 b로 나누면 실수 나눗셈이 이루어집니다. result = 3.500000이 됩니다."},
+  {ch:4,type:'code',
+   q:"정수 변수 <code>x = 5</code>를 선언하고, <strong>후위 증가 연산자(++)</strong>를 사용하여 x를 1 증가시키는 코드를 두 줄로 작성하세요.",
+   hint:["int x = 5;","x++;"],
+   keywords:['int','x','5','++'],
+   sample:"int x = 5;\nx++;",
+   exp:"<strong>x++</strong>는 후위 증가 연산자로, 현재 x 값을 사용한 뒤 1을 더합니다. 실행 후 x는 6이 됩니다."},
+];
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let currentTab = 0;
+const answered = new Array(questions.length).fill(false);
+const results  = new Array(questions.length).fill(null);
+
+const chInfo = {
+  0: { name: 'MIDTERM REVIEW', color: '' },
+  1: { name: 'CH.01 변수·데이터형', color: 'ch1' },
+  2: { name: 'CH.02 표준 입출력',   color: 'ch2' },
+  3: { name: 'CH.03 함수',          color: 'ch3' },
+  4: { name: 'CH.04 코드 작성',     color: 'ch4' },
+};
+const chDivInfo = {
+  1: { pill:'p1', label:'CH.01 — 변수와 데이터 형식', sub:'Variables & Data Types' },
+  2: { pill:'p2', label:'CH.02 — 표준 입출력 함수',   sub:'printf · scanf_s · 형식지정자' },
+  3: { pill:'p3', label:'CH.03 — 함수',               sub:'Functions & Scope' },
+  4: { pill:'p4', label:'CH.04 — 코드 작성 연습',     sub:'Coding Practice' },
+};
+
+/* Visible question global indices for current tab */
+function visibleIndices() {
+  if (currentTab === 0) return questions.map((_,i) => i);
+  return questions.reduce((acc,q,i) => { if (q.ch === currentTab) acc.push(i); return acc; }, []);
+}
+
+/* ── TABS ── */
+function setTab(ch) {
+  currentTab = ch;
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', i === ch);
+  });
+  document.getElementById('chapterBadge').textContent = chInfo[ch].name;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('actions').style.display = 'none';
+  renderQuiz();
+  updateProgress();
+  scrollToTop();
+}
+
+/* ── RENDER ── */
+function renderQuiz() {
+  const container = document.getElementById('quiz');
+  container.style.display = 'block';
+  container.innerHTML = '';
+
+  const indices = visibleIndices();
+  let lastCh = -1;
+  let displayNum = 0;
+
+  indices.forEach((gi) => {
+    const q = questions[gi];
+
+    // Chapter header (in 전체 view only)
+    if (currentTab === 0 && q.ch !== lastCh) {
+      const d = chDivInfo[q.ch];
+      const div = document.createElement('div');
+      div.className = 'ch-header';
+      div.innerHTML = `
+        <div class="ch-pill ${d.pill}">${d.label}</div>
+        <div class="ch-line"></div>
+        <div class="ch-title">${d.sub}</div>
+      `;
+      container.appendChild(div);
+      lastCh = q.ch;
+    }
+
+    displayNum++;
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `card-${gi}`;
+    card.style.animationDelay = `${displayNum * 0.035}s`;
+
+    const numClass = `c${q.ch}`;
+    const prefix = q.type === 'code' ? `CODE-${String(displayNum).padStart(2,'0')}` : `Q${String(displayNum).padStart(2,'0')}`;
+    const qText = q.q.replace(/\n/g, '<br>');
+
+    if (q.type === 'mc') {
+      card.innerHTML = `
+        <div class="q-num ${numClass}">// ${prefix}</div>
+        <div class="q-text">${qText}</div>
+        <div class="options" id="opts-${gi}">
+          ${q.opts.map((o,j) => `
+            <div class="opt ${answered[gi]?'locked':''} ${answered[gi] && j===q.ans?'correct':''} ${answered[gi] && results[gi]===false && j===gi?'':''}"
+                 id="opt-${gi}-${j}" onclick="choose(${gi},${j})">
+              <span class="opt-key">${['A','B','C','D'][j]}</span>
+              <span>${o}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="feedback ${answered[gi]?'show '+(results[gi]?'ok':'no'):''}" id="fb-${gi}">
+          ${answered[gi] ? (results[gi]?'✓ 정답입니다! ':'✗ 오답입니다. ') + q.exp : ''}
+        </div>
+      `;
+      // Re-apply correct/wrong classes
+      if (answered[gi]) {
+        setTimeout(() => {
+          const opts = document.querySelectorAll(`#opts-${gi} .opt`);
+          opts.forEach((el, j) => {
+            el.classList.add('locked');
+            if (j === q.ans) el.classList.add('correct');
+            else if (results[gi] === false) {
+              // find which was chosen — we don't store it, so just highlight correct
+            }
+          });
+        }, 0);
+      }
+    } else {
+      // code question
+      const hintHtml = q.hint.map(h => `<span class="hint-chip">${h}</span>`).join('');
+      const isAnswered = answered[gi];
+      const isOk = results[gi];
+      card.innerHTML = `
+        <div class="q-num ${numClass}">// ${prefix} — 코드 작성</div>
+        <div class="q-text">${qText}</div>
+        <div class="hint-chips">${hintHtml}</div>
+        <div class="code-label">// 코드를 입력하세요</div>
+        <div class="code-input-wrap">
+          <textarea class="code-input ${isAnswered?(isOk?'success':'fail'):''}"
+                    id="code-input-${gi}"
+                    placeholder="여기에 C 코드를 작성하세요..."
+                    ${isAnswered?'readonly':''}
+                    spellcheck="false">${isAnswered ? (document.getElementById('code-input-'+gi)||{value:''}).value||'' : ''}</textarea>
+        </div>
+        <button class="btn-submit" id="btn-${gi}" onclick="submitCode(${gi})" ${isAnswered?'disabled':''}>
+          ${isAnswered ? (isOk?'✓ 제출 완료':'✗ 제출됨') : '▶ 제출하기'}
+        </button>
+        <div class="feedback ${isAnswered?'show '+(isOk?'ok':'no'):''}" id="fb-${gi}">
+          ${isAnswered ? (isOk?'✓ 핵심 키워드를 모두 포함했습니다! ':'✗ 일부 키워드가 누락되었습니다. ') + q.exp : ''}
+        </div>
+        <div class="sample-box ${isAnswered?'show':''}" id="sample-${gi}">
+          <div class="sample-label">// 모범 답안</div>
+          <pre class="sample-code">${q.sample}</pre>
+        </div>
+      `;
+    }
+    container.appendChild(card);
+  });
+}
+
+/* ── MC ANSWER ── */
+function choose(gi, oi) {
+  if (answered[gi]) return;
+  answered[gi] = true;
+  const q = questions[gi];
+  results[gi] = (oi === q.ans);
+
+  const opts = document.querySelectorAll(`#opts-${gi} .opt`);
+  opts.forEach((el, j) => {
+    el.classList.add('locked');
+    if (j === q.ans) el.classList.add('correct');
+    else if (j === oi) el.classList.add('wrong');
+  });
+
+  const fb = document.getElementById(`fb-${gi}`);
+  fb.className = `feedback show ${results[gi] ? 'ok' : 'no'}`;
+  fb.innerHTML = (results[gi] ? '✓ 정답입니다! ' : '✗ 오답입니다. ') + q.exp;
+
+  updateProgress();
+  checkAllDone();
+}
+
+/* ── CODE SUBMIT ── */
+const savedCode = {};
+function submitCode(gi) {
+  const q = questions[gi];
+  const textarea = document.getElementById(`code-input-${gi}`);
+  const userCode = textarea.value;
+  savedCode[gi] = userCode;
+  const normalized = userCode.toLowerCase().replace(/\s+/g,' ');
+
+  const ok = q.keywords.every(kw => normalized.includes(kw.toLowerCase()));
+  answered[gi] = true;
+  results[gi] = ok;
+
+  textarea.classList.add(ok ? 'success' : 'fail');
+  textarea.setAttribute('readonly', true);
+
+  const btn = document.getElementById(`btn-${gi}`);
+  btn.disabled = true;
+  btn.textContent = ok ? '✓ 제출 완료' : '✗ 제출됨';
+
+  const fb = document.getElementById(`fb-${gi}`);
+  fb.className = `feedback show ${ok ? 'ok' : 'no'}`;
+  fb.innerHTML = (ok ? '✓ 핵심 키워드를 모두 포함했습니다! ' : '✗ 일부 키워드가 누락되었습니다. ') + q.exp;
+
+  const sample = document.getElementById(`sample-${gi}`);
+  sample.classList.add('show');
+
+  updateProgress();
+  checkAllDone();
+}
+
+/* ── PROGRESS ── */
+function updateProgress() {
+  const vis = visibleIndices();
+  const done = vis.filter(i => answered[i]).length;
+  const total = vis.length;
+  const pct = total > 0 ? (done / total * 100).toFixed(0) : 0;
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progText').textContent = `${done} / ${total}`;
+}
+
+function checkAllDone() {
+  const vis = visibleIndices();
+  if (vis.every(i => answered[i])) {
+    document.getElementById('actions').style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('actions').scrollIntoView({ behavior: 'smooth' });
+    }, 400);
+  }
+}
+
+/* ── RESULT ── */
+function showResult() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('actions').style.display = 'none';
+
+  const vis = visibleIndices();
+  const correct = vis.filter(i => results[i] === true).length;
+  const wrong   = vis.filter(i => results[i] === false).length;
+  const total   = vis.length;
+  const pct = Math.round(correct / total * 100);
+
+  let grade, cls, msg;
+  if (pct >= 80) { grade = '우수 🎉'; cls = 'great'; msg = '훌륭합니다! 개념을 잘 이해하고 있네요. 시험 잘 보세요!'; }
+  else if (pct >= 50) { grade = '보통 📚'; cls = 'mid'; msg = '절반 이상 맞혔어요! 틀린 문제를 꼭 복습해보세요.'; }
+  else { grade = '미흡 💪'; cls = 'low'; msg = '슬라이드를 다시 꼼꼼히 읽어보세요. 할 수 있어요!'; }
+
+  // Chapter breakdown
+  const chs = currentTab === 0 ? [1,2,3,4] : [currentTab];
+  const breakdownHtml = chs.map(ch => {
+    const chVis = vis.filter(i => questions[i].ch === ch);
+    if (chVis.length === 0) return '';
+    const chCorrect = chVis.filter(i => results[i] === true).length;
+    const chPct = Math.round(chCorrect / chVis.length * 100);
+    const color = chPct >= 80 ? 'var(--green)' : chPct >= 50 ? 'var(--gold)' : 'var(--red)';
+    return `<div class="ch-stat">
+      <div class="ch-stat-name">${chInfo[ch].name}</div>
+      <div class="ch-stat-score" style="color:${color}">${chCorrect}/${chVis.length} (${chPct}%)</div>
+    </div>`;
+  }).join('');
+
+  const res = document.getElementById('result');
+  res.style.display = 'block';
+  res.innerHTML = `
+    <div class="score-ring ${cls}">${pct}%</div>
+    <h2>${grade} — ${pct}점</h2>
+    <p>${msg}</p>
+    <div class="score-summary">
+      <div class="score-item"><div class="val v-correct">${correct}</div><div class="lbl">CORRECT</div></div>
+      <div class="score-item"><div class="val v-wrong">${wrong}</div><div class="lbl">WRONG</div></div>
+      <div class="score-item"><div class="val v-total">${total}</div><div class="lbl">TOTAL</div></div>
+    </div>
+    ${chs.length > 1 ? `<div class="ch-breakdown">${breakdownHtml}</div>` : ''}
+    <button class="btn" onclick="restart()">↺ 다시 풀기</button>
+    <button class="btn btn-ghost" onclick="reviewAnswers()">답안 검토</button>
+  `;
+  scrollToTop();
+}
+
+function restart() {
+  const vis = visibleIndices();
+  vis.forEach(i => { answered[i] = false; results[i] = null; });
+  document.getElementById('result').style.display = 'none';
+  renderQuiz();
+  updateProgress();
+  scrollToTop();
+}
+
+function reviewAnswers() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  scrollToTop();
+}
+
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+/* ── INIT ── */
+renderQuiz();
+updateProgress();
+</script>
+</body>
+</html>

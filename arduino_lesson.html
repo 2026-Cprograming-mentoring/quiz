@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아두이노 기초 & 센서 활용</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;
+  --bg2:#111827;
+  --surface:#1a1f35;
+  --surface2:#232942;
+  --border:#2a3155;
+  --cyan:#06d6a0;
+  --cyan2:#00e5cc;
+  --blue:#3b82f6;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --purple:#a78bfa;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --code-bg:#0d1117;
+  --font-head:'Noto Sans KR', sans-serif;
+  --font-code:'JetBrains Mono', monospace;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-head);
+  font-weight:400;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+
+/* ── Circuit board background texture ── */
+body::before{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(6,214,160,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(59,130,246,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(167,139,250,0.03) 0%, transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── Grid pattern overlay ── */
+body::after{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background-image:
+    linear-gradient(rgba(6,214,160,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6,214,160,0.02) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+.container{max-width:960px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,14,26,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:12px 0;
+}
+nav .container{display:flex;align-items:center;gap:16px;overflow-x:auto;scrollbar-width:none}
+nav .container::-webkit-scrollbar{display:none}
+.nav-logo{
+  font-family:var(--font-code);font-weight:700;font-size:14px;
+  color:var(--cyan);white-space:nowrap;
+  letter-spacing:1px;
+}
+.nav-logo span{color:var(--text3)}
+.nav-links{display:flex;gap:4px;flex-shrink:0}
+.nav-links a{
+  font-size:12px;color:var(--text3);text-decoration:none;
+  padding:6px 12px;border-radius:6px;white-space:nowrap;
+  transition:all .2s;font-weight:600;letter-spacing:-0.2px;
+}
+.nav-links a:hover,.nav-links a.active{color:var(--cyan);background:rgba(6,214,160,0.08)}
+
+/* ── HERO ── */
+.hero{
+  padding:100px 0 80px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-100px;right:-200px;
+  width:500px;height:500px;
+  background:radial-gradient(circle, rgba(6,214,160,0.08) 0%, transparent 70%);
+  border-radius:50%;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.2);
+  padding:6px 16px;border-radius:100px;font-size:13px;color:var(--cyan);
+  font-weight:600;margin-bottom:24px;
+  animation:fadeUp .6s ease both;
+}
+.hero-badge::before{content:'●';font-size:8px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{
+  font-size:clamp(36px,6vw,56px);font-weight:900;
+  line-height:1.15;letter-spacing:-2px;
+  margin-bottom:16px;
+  animation:fadeUp .6s .1s ease both;
+}
+.hero h1 .accent{
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{
+  font-size:18px;color:var(--text2);max-width:540px;
+  animation:fadeUp .6s .2s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SECTION ── */
+section{padding:80px 0;border-top:1px solid var(--border)}
+.section-label{
+  font-family:var(--font-code);font-size:12px;font-weight:700;
+  color:var(--cyan);text-transform:uppercase;letter-spacing:3px;
+  margin-bottom:12px;
+}
+.section-title{
+  font-size:clamp(26px,4vw,36px);font-weight:900;
+  letter-spacing:-1px;margin-bottom:40px;line-height:1.2;
+}
+.section-title .muted{color:var(--text3);font-weight:400}
+
+/* ── CARDS ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:28px;
+  transition:all .3s;position:relative;overflow:hidden;
+}
+.card:hover{border-color:rgba(6,214,160,0.3);transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(6,214,160,0.06)}
+.card-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:16px;
+}
+.card h3{font-size:17px;font-weight:700;margin-bottom:8px;letter-spacing:-0.3px}
+.card p{font-size:14px;color:var(--text2);line-height:1.6}
+.card .tag{
+  display:inline-block;margin-top:12px;
+  font-size:11px;font-weight:700;letter-spacing:0.5px;
+  padding:4px 10px;border-radius:6px;
+}
+
+/* ── CODE BLOCKS ── */
+.code-section{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media(max-width:700px){.code-section{grid-template-columns:1fr}}
+.code-block{
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+}
+.code-header{
+  display:flex;align-items:center;gap:8px;
+  padding:14px 20px;
+  background:rgba(255,255,255,0.03);
+  border-bottom:1px solid var(--border);
+}
+.code-dots{display:flex;gap:6px}
+.code-dots span{width:10px;height:10px;border-radius:50%;background:var(--border)}
+.code-dots span:nth-child(1){background:#ef4444}
+.code-dots span:nth-child(2){background:#f59e0b}
+.code-dots span:nth-child(3){background:#22c55e}
+.code-title{font-family:var(--font-code);font-size:12px;color:var(--text3);margin-left:auto}
+pre{
+  padding:20px;margin:0;overflow-x:auto;
+  font-family:var(--font-code);font-size:13px;line-height:1.8;
+}
+pre .kw{color:#ff7b72}
+pre .fn{color:#d2a8ff}
+pre .str{color:#a5d6ff}
+pre .num{color:#79c0ff}
+pre .cmt{color:#484f58;font-style:italic}
+pre .type{color:#ffa657}
+pre .var{color:var(--cyan2)}
+
+/* ── INFO BOXES ── */
+.info-box{
+  border-radius:14px;padding:24px 28px;margin:24px 0;
+  display:flex;gap:16px;align-items:flex-start;
+}
+.info-box.tip{background:rgba(6,214,160,0.06);border-left:3px solid var(--cyan)}
+.info-box.warn{background:rgba(245,158,11,0.06);border-left:3px solid var(--amber)}
+.info-box.danger{background:rgba(239,68,68,0.06);border-left:3px solid var(--red)}
+.info-box .icon{font-size:20px;flex-shrink:0;margin-top:2px}
+.info-box .content{font-size:14px;color:var(--text2);line-height:1.7}
+.info-box .content strong{color:var(--text)}
+
+/* ── FUNCTION REF ── */
+.func-ref{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:20px 24px;margin:12px 0;
+  display:flex;align-items:center;gap:20px;
+  transition:all .3s;
+}
+.func-ref:hover{border-color:rgba(6,214,160,0.3)}
+.func-ref .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.func-ref code{
+  font-family:var(--font-code);font-size:14px;font-weight:600;
+  white-space:nowrap;
+}
+.func-ref .desc{font-size:13px;color:var(--text2);margin-left:auto;text-align:right}
+
+/* ── STEPS ── */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.step{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:24px 20px;text-align:center;
+  position:relative;transition:all .3s;
+}
+.step:hover{border-color:rgba(6,214,160,0.3);transform:translateY(-2px)}
+.step-num{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-code);font-size:16px;font-weight:700;
+  margin:0 auto 14px;
+}
+.step h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.step p{font-size:12px;color:var(--text2)}
+
+/* ── SENSOR CARDS ── */
+.sensor-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;margin:24px 0;
+}
+.sensor-header{
+  padding:24px 28px;display:flex;align-items:center;gap:16px;
+  border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background .2s;
+}
+.sensor-header:hover{background:rgba(255,255,255,0.02)}
+.sensor-header .emoji{font-size:28px}
+.sensor-header h3{font-size:20px;font-weight:700;letter-spacing:-0.3px;flex:1}
+.sensor-header .chevron{
+  color:var(--text3);transition:transform .3s;font-size:20px;
+}
+.sensor-card.open .sensor-header .chevron{transform:rotate(180deg)}
+.sensor-body{
+  max-height:0;overflow:hidden;transition:max-height .4s ease;
+}
+.sensor-card.open .sensor-body{max-height:2000px}
+.sensor-content{padding:28px}
+
+/* ── PROJECT CARDS ── */
+.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.project{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:24px;
+  position:relative;overflow:hidden;transition:all .3s;
+}
+.project:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+.project::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+}
+.project .diff{
+  font-size:14px;letter-spacing:2px;margin-bottom:12px;
+}
+.project h4{font-size:16px;font-weight:700;margin-bottom:8px}
+.project p{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5}
+.project .parts{
+  font-family:var(--font-code);font-size:11px;
+  padding:6px 12px;border-radius:8px;
+  display:inline-block;
+}
+
+/* ── CHEATSHEET ── */
+.cheat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.cheat-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:16px 20px;
+  transition:all .3s;
+}
+.cheat-item:hover{border-color:rgba(6,214,160,0.3)}
+.cheat-item code{
+  font-family:var(--font-code);font-size:13px;font-weight:600;
+  display:block;margin-bottom:4px;
+}
+.cheat-item .desc{font-size:12px;color:var(--text2)}
+.cheat-item .cat{
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;margin-top:8px;
+}
+
+/* ── CIRCUIT BOX ── */
+.circuit{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;padding:20px 24px;margin:16px 0;
+  font-family:var(--font-code);font-size:13px;color:var(--amber);
+}
+.circuit strong{color:var(--text)}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);padding:40px 0;
+  text-align:center;color:var(--text3);font-size:13px;
+}
+footer .next{
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,rgba(6,214,160,0.1),rgba(59,130,246,0.1));
+  border:1px solid rgba(6,214,160,0.2);
+  padding:16px 32px;border-radius:14px;
+  font-size:16px;font-weight:700;color:var(--cyan);
+  margin-bottom:20px;
+}
+
+/* ── BREADBOARD DIAGRAM ── */
+.board-parts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:600px){.board-parts{grid-template-columns:1fr}}
+.board-part{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:10px;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+}
+.board-part .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.board-part strong{font-size:13px}
+.board-part span{font-size:12px;color:var(--text2)}
+
+/* ── TOC CARDS ── */
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:32px}
+.toc-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:18px 14px;text-align:center;
+  text-decoration:none;color:var(--text);transition:all .3s;
+}
+.toc-card:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.toc-card .num{
+  font-family:var(--font-code);font-size:22px;font-weight:700;
+  display:block;margin-bottom:6px;
+}
+.toc-card .label{font-size:12px;font-weight:600}
+.toc-card .sub{font-size:10px;color:var(--text3);margin-top:4px}
+
+/* ── SCROLL ANIMATIONS ── */
+.reveal{opacity:0;transform:translateY(24px);transition:all .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:600px){
+  .code-section{grid-template-columns:1fr}
+  .toc-grid{grid-template-columns:repeat(3,1fr)}
+  nav .container{gap:10px}
+  section{padding:50px 0}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="nav-logo">Arduino<span>.lesson</span></div>
+    <div class="nav-links">
+      <a href="#intro">시작</a>
+      <a href="#ide">IDE</a>
+      <a href="#digital-out">LED</a>
+      <a href="#digital-in">버튼</a>
+      <a href="#serial">시리얼</a>
+      <a href="#analog">아날로그</a>
+      <a href="#sensors">센서</a>
+      <a href="#project">프로젝트</a>
+      <a href="#cheat">정리</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-badge">LESSON 01</div>
+    <h1>아두이노 <span class="accent">기초</span> &<br>센서 활용</h1>
+    <p>기초 개념부터 센서 활용까지, 코드 한 줄로 하드웨어를 움직여봅시다.</p>
+    <div class="toc-grid">
+      <a href="#intro" class="toc-card"><span class="num" style="color:var(--cyan)">01</span><span class="label">아두이노란?</span><span class="sub">보드 구조</span></a>
+      <a href="#ide" class="toc-card"><span class="num" style="color:var(--blue)">02</span><span class="label">IDE 설정</span><span class="sub">환경 구축</span></a>
+      <a href="#digital-out" class="toc-card"><span class="num" style="color:var(--amber)">03</span><span class="label">LED Blink</span><span class="sub">디지털 출력</span></a>
+      <a href="#digital-in" class="toc-card"><span class="num" style="color:var(--red)">04</span><span class="label">버튼 입력</span><span class="sub">디지털 입력</span></a>
+      <a href="#serial" class="toc-card"><span class="num" style="color:var(--purple)">05</span><span class="label">시리얼</span><span class="sub">데이터 확인</span></a>
+      <a href="#analog" class="toc-card"><span class="num" style="color:var(--cyan)">06</span><span class="label">아날로그</span><span class="sub">가변저항</span></a>
+      <a href="#sensors" class="toc-card"><span class="num" style="color:var(--amber)">07</span><span class="label">센서 활용</span><span class="sub">조도 / 온습도 / 초음파</span></a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════ 아두이노란? ═══════════════════ -->
+<section id="intro">
+  <div class="container">
+    <div class="section-label reveal">CHAPTER 01</div>
+    <h2 class="section-title reveal">아두이노란? <span class="muted">— Arduino UNO</span></h2>
+
+    <div class="code-section reveal">
+      <div>
+        <p style="font-size:15px;color:var(--text2);margin-bottom:24px;line-height:1.8">
+          아두이노는 <strong style="color:var(--cyan)">오픈소스 마이크로컨트롤러 보드</strong>입니다.
+          코드를 작성하면 실제 하드웨어를 제어할 수 있는 작은 컴퓨터예요.<br><br>
+          센서로 데이터를 읽고, LED·모터·스피커 등을 동작시킬 수 있으며,
+          C/C++ 기반의 간단한 문법으로 프로그래밍합니다.
+        </p>
+        <div class="info-box tip">
+          <span class="icon">💡</span>
+          <div class="content">가장 많이 사용하는 보드는 <strong>Arduino UNO</strong>이며, 이번 수업에서도 UNO를 기준으로 진행합니다.</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Arduino UNO 주요 부분</h3>
+        <div class="board-parts">
+          <div class="board-part"><span class="dot" style="background:var(--cyan)"></span><div><strong>디지털 핀 D0~D13</strong><br><span>HIGH/LOW 신호 입출력</span></div></div>
+          <div class="board-part"><span class="dot" style="background:var(--purple)"></span><div><strong>아날로그 핀 A0~A5</strong><br><span>0~1023 값 읽기</span></div></div>
+          <div class="board-part"><span class="dot" style="background:var(--red)"></span><div><strong>5V / 3.3V / GND</strong><br><span>전원 공급 핀</span></div></div>
+          <div class="board-part"><span class="dot" style="background:var(--amber)"></span><div><strong>USB 포트</strong><br><span>코드 업로드 & 전원</span></div></div>
+          <div class="board-part"><span class="dot" style="background:var(--blue)"></span><div><strong>리셋 버튼</strong><br><span>프로그램 재시작</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ IDE 설치 ═══════════════════ -->
+<section id="ide">
+  <div class="container">
+    <div class="section-label reveal">CHAPTER 02</div>
+    <h2 class="section-title reveal">Arduino IDE <span class="muted">— 설치 & 설정</span></h2>
+
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num" style="background:rgba(6,214,160,0.15);color:var(--cyan)">1</div>
+        <h4>IDE 다운로드</h4>
+        <p>arduino.cc 접속<br>→ Software → Download</p>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(59,130,246,0.15);color:var(--blue)">2</div>
+        <h4>설치 & 실행</h4>
+        <p>설치 후<br>Arduino IDE 실행</p>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,0.15);color:var(--amber)">3</div>
+        <h4>보드 선택</h4>
+        <p>Tools → Board<br>→ Arduino UNO</p>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(167,139,250,0.15);color:var(--purple)">4</div>
+        <h4>포트 선택</h4>
+        <p>Tools → Port<br>→ COM 포트 선택</p>
+      </div>
+    </div>
+
+    <div class="code-block reveal" style="margin-top:32px">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-title">기본 코드 구조</span>
+      </div>
+<pre><span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="cmt">// 처음 한 번만 실행 (핀 모드 설정 등)</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="cmt">// 반복 실행 (메인 동작)</span>
+}</pre>
+    </div>
+
+    <div class="info-box tip reveal">
+      <span class="icon">📌</span>
+      <div class="content"><strong>setup()</strong>은 전원이 켜질 때 딱 한 번 실행되고, <strong>loop()</strong>은 그 뒤로 무한 반복됩니다. 모든 아두이노 코드는 이 두 함수로 구성돼요.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 디지털 출력: LED ═══════════════════ -->
+<section id="digital-out">
+  <div class="container">
+    <div class="section-label reveal">CHAPTER 03</div>
+    <h2 class="section-title reveal">디지털 출력 <span class="muted">— LED 깜빡이기</span></h2>
+
+    <div class="code-section reveal">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-title">Blink.ino</span>
+        </div>
+<pre><span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="num">13</span>, <span class="type">OUTPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">digitalWrite</span>(<span class="num">13</span>, <span class="type">HIGH</span>);
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+  <span class="fn">digitalWrite</span>(<span class="num">13</span>, <span class="type">LOW</span>);
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+}</pre>
+      </div>
+
+      <div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">핵심 함수</h3>
+        <div class="func-ref">
+          <span class="dot" style="background:var(--cyan)"></span>
+          <code style="color:var(--cyan)">pinMode(핀, 모드)</code>
+          <span class="desc">핀을 INPUT 또는 OUTPUT으로 설정</span>
+        </div>
+        <div class="func-ref">
+          <span class="dot" style="background:var(--blue)"></span>
+          <code style="color:var(--blue)">digitalWrite(핀, 값)</code>
+          <span class="desc">HIGH(5V) 또는 LOW(0V) 출력</span>
+        </div>
+        <div class="func-ref">
+          <span class="dot" style="background:var(--amber)"></span>
+          <code style="color:var(--amber)">delay(밀리초)</code>
+          <span class="desc">지정 시간만큼 대기 (1000=1초)</span>
+        </div>
+
+        <div class="circuit" style="margin-top:20px">
+          <strong>회로:</strong> 13번 핀 → 저항(220Ω) → LED(+) → GND<br>
+          내장 LED로도 테스트 가능!
+        </div>
+      </div>
+    </div>
+
+    <!-- 브레드보드 & 저항 -->
+    <h3 class="reveal" style="font-size:20px;font-weight:700;margin:48px 0 20px;letter-spacing:-0.5px">브레드보드 & 저항 기초</h3>
+    <div class="code-section reveal">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 28px">
+        <h4 style="color:var(--cyan);font-size:15px;margin-bottom:14px">🔌 브레드보드 구조</h4>
+        <ul style="list-style:none;font-size:14px;color:var(--text2);line-height:2">
+          <li>▸ 가로줄은 내부적으로 연결되어 있음</li>
+          <li>▸ 상하 양쪽의 긴 줄은 전원 라인</li>
+          <li>▸ 빨간줄 = VCC(+), 파란줄 = GND(–)</li>
+          <li>▸ 중간 홈을 기준으로 위/아래가 분리됨</li>
+          <li>▸ 납땜 없이 회로를 구성할 수 있어 편리!</li>
+        </ul>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 28px">
+        <h4 style="color:var(--amber);font-size:15px;margin-bottom:14px">⚡ 저항을 왜 사용할까?</h4>
+        <div class="info-box danger" style="margin:0 0 16px">
+          <span class="icon">🚫</span>
+          <div class="content">LED에 직접 5V를 연결하면 <strong>과전류로 고장!</strong></div>
+        </div>
+        <p style="font-size:14px;color:var(--text2);margin-bottom:12px">저항으로 전류를 제한해서 보호합니다.</p>
+        <div style="font-family:var(--font-code);font-size:13px;line-height:2;color:var(--text)">
+          <span style="color:var(--cyan)">220Ω</span> → LED 보호용 (가장 흔함)<br>
+          <span style="color:var(--purple)">1kΩ</span> → 일반적인 신호 제한<br>
+          <span style="color:var(--amber)">10kΩ</span> → 풀업/풀다운 저항
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 디지털 입력: 버튼 ═══════════════════ -->
+<section id="digital-in">
+  <div class="container">
+    <div class="section-label reveal">CHAPTER 04</div>
+    <h2 class="section-title reveal">디지털 입력 <span class="muted">— 버튼으로 LED 제어</span></h2>
+
+    <div class="code-section reveal">
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-title">Button_LED.ino</span>
+        </div>
+<pre><span class="kw">const int</span> <span class="var">btnPin</span> = <span class="num">2</span>;
+<span class="kw">const int</span> <span class="var">ledPin</span> = <span class="num">13</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="var">ledPin</span>, <span class="type">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="var">btnPin</span>, <span class="type">INPUT_PULLUP</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">if</span> (<span class="fn">digitalRead</span>(<span class="var">btnPin</span>) == <span class="type">LOW</span>) {
+    <span class="fn">digitalWrite</span>(<span class="var">ledPin</span>, <span class="type">HIGH</span>);
+  } <span class="kw">else</span> {
+    <span class="fn">digitalWrite</span>(<span class="var">ledPin</span>, <span class="type">LOW</span>);
+  }
+}</pre>
+      </div>
+
+      <div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">새로운 함수</h3>
+        <div class="func-ref">
+          <span class="dot" style="background:var(--amber)"></span>
+          <code style="color:var(--amber)">digitalRead(핀)</code>
+          <span class="desc">핀의 상태를 HIGH/LOW로 읽기</span>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:20px">
+          <h4 style="font-size:15px;font-weight:700;margin-bottom:12px">INPUT_PULLUP이란?</h4>
+          <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:12px">
+            아두이노 내부에 풀업 저항을 활성화합니다.<br>
+            → 외부 저항 없이도 안정적 입력 가능!
+          </p>
+          <div style="font-size:14px;line-height:2">
+            <span style="color:var(--cyan);font-weight:700">버튼 안 눌림 = HIGH</span><br>
+            <span style="color:var(--red);font-weight:700">버튼 눌림 = LOW</span>
+          </div>
+          <div class="info-box warn" style="margin:12px 0 0">
+            <span class="icon">⚠️</span>
+            <div class="content">평소와 반대이므로 주의하세요!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 시리얼 모니터 ═══════════════════ -->
+<section id="serial">
+  <div class="container">
+    <div class="section-label reveal">CHAPTER 05</div>
+    <h2 class="section-title reveal">시리얼 모니터 <span class="muted">— 데이터 확인하기</span></h2>
+
+    <div class="code-section reveal">
+      <div>
+        <div style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.15);border-radius:14px;padding:24px 28px;margin-bottom:20px">
+          <h4 style="color:var(--purple);font-size:15px;margin-bottom:10px">시리얼 모니터란?</h4>
+          <p style="font-size:14px;color:var(--text2);line-height:1.7">
+            아두이노와 PC 사이의 통신 창입니다.<br>
+            센서 값, 변수 등을 <strong style="color:var(--text)">실시간으로 확인</strong>할 수 있고,<br>
+            디버깅할 때 <strong style="color:var(--purple)">필수적인 도구</strong>입니다!
+          </p>
+        </div>
+
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:12px">주요 시리얼 함수</h4>
+        <div class="func-ref">
+          <span class="dot" style="background:var(--cyan)"></span>
+          <code style="color:var(--cyan)">Serial.begin(9600)</code>
+          <span class="desc">통신 시작 (보드레이트 설정)</span>
+        </div>
+        <div class="func-ref">
+          <span class="dot" style="background:var(--blue)"></span>
+          <code style="color:var(--blue)">Serial.print(값)</code>
+          <span class="desc">값 출력 (줄바꿈 없음)</span>
+        </div>
+        <div class="func-ref">
+          <span class="dot" style="background:var(--amber)"></span>
+          <code style="color:var(--amber)">Serial.println(값)</code>
+          <span class="desc">값 출력 + 줄바꿈</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-title">Serial_Hello.ino</span>
+        </div>
+<pre><span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">Serial.println</span>(<span class="str">"Hello!"</span>);
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 아날로그 입력 ═══════════════════ -->
+<section id="analog">
+  <div class="container">
+    <div class="section-label reveal">CHAPTER 06</div>
+    <h2 class="section-title reveal">아날로그 입력 <span class="muted">— 가변저항</span></h2>
+
+    <div class="code-section reveal">
+      <div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:20px">
+          <h4 style="color:var(--cyan);font-size:15px;margin-bottom:14px">디지털 vs 아날로그</h4>
+          <div style="font-family:var(--font-code);font-size:14px;line-height:2.2">
+            <span style="color:var(--blue)">디지털:</span>  0 또는 1 <span style="color:var(--text3)">(ON / OFF)</span><br>
+            <span style="color:var(--purple)">아날로그:</span> 0 ~ 1023 <span style="color:var(--text3)">(연속적인 값)</span>
+          </div>
+          <p style="font-size:13px;color:var(--cyan);margin-top:10px;font-weight:600">
+            → 밝기, 온도, 거리 등 연속적인 데이터를 읽을 때 사용!
+          </p>
+        </div>
+
+        <div class="func-ref">
+          <span class="dot" style="background:var(--purple)"></span>
+          <code style="color:var(--purple)">analogRead(핀)</code>
+          <span class="desc">A0~A5에서 0~1023 값 읽기</span>
+        </div>
+
+        <div class="circuit" style="margin-top:16px">
+          <strong>회로:</strong> 가변저항 왼쪽→5V, 가운데→A0, 오른쪽→GND
+        </div>
+
+        <div class="info-box tip" style="margin-top:16px">
+          <span class="icon">💡</span>
+          <div class="content">가변저항을 돌리면서 시리얼 모니터에서 0~1023 값이 변하는 걸 확인해보세요!</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-title">Potentiometer.ino</span>
+        </div>
+<pre><span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">int</span> <span class="var">val</span> = <span class="fn">analogRead</span>(<span class="type">A0</span>);
+  <span class="fn">Serial.println</span>(<span class="var">val</span>);
+  <span class="fn">delay</span>(<span class="num">100</span>);
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 센서 활용 ═══════════════════ -->
+<section id="sensors">
+  <div class="container">
+    <div class="section-label reveal">CHAPTER 07</div>
+    <h2 class="section-title reveal">센서 활용 <span class="muted">— 조도 / 온습도 / 초음파</span></h2>
+
+    <!-- 조도센서 -->
+    <div class="sensor-card open reveal">
+      <div class="sensor-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="emoji">☀️</span>
+        <h3>센서 ①  조도센서 (CdS)</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sensor-body">
+        <div class="sensor-content">
+          <div class="code-section">
+            <div>
+              <p style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:16px">
+                빛의 밝기에 따라 저항값이 변하는 센서입니다.<br>
+                <span style="color:var(--cyan)">밝으면 → 저항↓ → 값 높아짐</span><br>
+                <span style="color:var(--amber)">어두우면 → 저항↑ → 값 낮아짐</span>
+              </p>
+              <div class="circuit">
+                <strong>회로:</strong> 5V → CdS → A0 → 10kΩ저항 → GND
+              </div>
+              <div class="info-box tip">
+                <span class="icon">🔧</span>
+                <div class="content"><strong>응용:</strong> 어두워지면 자동으로 LED가 켜지는 가로등 만들기! (임계값 300은 환경에 따라 조정)</div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                <span class="code-title">CdS_LED.ino</span>
+              </div>
+<pre><span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="fn">pinMode</span>(<span class="num">13</span>, <span class="type">OUTPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">int</span> <span class="var">light</span> = <span class="fn">analogRead</span>(<span class="type">A0</span>);
+  <span class="fn">Serial.println</span>(<span class="var">light</span>);
+
+  <span class="kw">if</span> (<span class="var">light</span> < <span class="num">300</span>) {
+    <span class="fn">digitalWrite</span>(<span class="num">13</span>, <span class="type">HIGH</span>);
+  } <span class="kw">else</span> {
+    <span class="fn">digitalWrite</span>(<span class="num">13</span>, <span class="type">LOW</span>);
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 온습도센서 -->
+    <div class="sensor-card reveal">
+      <div class="sensor-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="emoji">🌡️</span>
+        <h3>센서 ②  온습도센서 (DHT11)</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sensor-body">
+        <div class="sensor-content">
+          <div class="code-section">
+            <div>
+              <div style="font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:16px">
+                <strong style="color:var(--text)">DHT11 센서 특징</strong><br>
+                온도: 0~50°C (±2°C 오차)<br>
+                습도: 20~80% (±5% 오차)<br>
+                3핀 연결: VCC(5V), DATA, GND
+              </div>
+              <div class="info-box warn">
+                <span class="icon">📦</span>
+                <div class="content"><strong>라이브러리 필요!</strong> DHT sensor library (by Adafruit)</div>
+              </div>
+              <h4 style="font-size:14px;font-weight:700;margin:20px 0 12px">라이브러리 설치 방법</h4>
+              <div class="steps" style="grid-template-columns:1fr">
+                <div class="step" style="text-align:left;padding:14px 18px;display:flex;align-items:center;gap:14px">
+                  <div class="step-num" style="background:rgba(6,214,160,0.15);color:var(--cyan);margin:0;flex-shrink:0">1</div>
+                  <div><strong style="font-size:13px">스케치 → 라이브러리 포함 → 라이브러리 관리</strong></div>
+                </div>
+                <div class="step" style="text-align:left;padding:14px 18px;display:flex;align-items:center;gap:14px">
+                  <div class="step-num" style="background:rgba(59,130,246,0.15);color:var(--blue);margin:0;flex-shrink:0">2</div>
+                  <div><strong style="font-size:13px">"DHT sensor library" 검색 (by Adafruit)</strong></div>
+                </div>
+                <div class="step" style="text-align:left;padding:14px 18px;display:flex;align-items:center;gap:14px">
+                  <div class="step-num" style="background:rgba(245,158,11,0.15);color:var(--amber);margin:0;flex-shrink:0">3</div>
+                  <div><strong style="font-size:13px">설치 버튼 클릭 (의존성도 함께 설치)</strong></div>
+                </div>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                <span class="code-title">DHT11_Read.ino</span>
+              </div>
+<pre><span class="str">#include "DHT.h"</span>
+<span class="type">DHT</span> <span class="var">dht</span>(<span class="num">2</span>, <span class="type">DHT11</span>);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="var">dht</span>.<span class="fn">begin</span>();
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">float</span> <span class="var">t</span> = <span class="var">dht</span>.<span class="fn">readTemperature</span>();
+  <span class="kw">float</span> <span class="var">h</span> = <span class="var">dht</span>.<span class="fn">readHumidity</span>();
+  <span class="fn">Serial.print</span>(<span class="var">t</span>);
+  <span class="fn">Serial.print</span>(<span class="str">"°C  / "</span>);
+  <span class="fn">Serial.print</span>(<span class="var">h</span>);
+  <span class="fn">Serial.println</span>(<span class="str">"%"</span>);
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 초음파센서 -->
+    <div class="sensor-card reveal">
+      <div class="sensor-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="emoji">📏</span>
+        <h3>센서 ③  초음파센서 (HC-SR04)</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="sensor-body">
+        <div class="sensor-content">
+          <div class="code-section">
+            <div>
+              <h4 style="font-size:15px;font-weight:700;margin-bottom:14px">작동 원리</h4>
+              <div style="font-size:14px;color:var(--text2);line-height:2">
+                ① Trig 핀에 10μs HIGH 신호 보냄<br>
+                ② 센서가 초음파 발사<br>
+                ③ 물체에 반사되어 돌아옴<br>
+                ④ Echo 핀에서 반사 시간 측정<br>
+                ⑤ 시간 → 거리로 변환
+              </div>
+              <div style="font-family:var(--font-code);font-size:15px;color:var(--cyan);font-weight:700;margin:16px 0;padding:12px 16px;background:rgba(6,214,160,0.08);border-radius:10px;text-align:center">
+                거리(cm) = 시간(μs) / 58.2
+              </div>
+              <div class="circuit">
+                <strong>핀 연결:</strong> VCC→5V | GND→GND | Trig→D9 | Echo→D10
+              </div>
+              <div class="func-ref" style="margin-top:12px">
+                <span class="dot" style="background:var(--cyan)"></span>
+                <code style="color:var(--cyan)">pulseIn(핀, HIGH)</code>
+                <span class="desc">HIGH인 시간(μs) 측정</span>
+              </div>
+            </div>
+            <div class="code-block">
+              <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                <span class="code-title">Ultrasonic.ino</span>
+              </div>
+<pre><span class="kw">const int</span> <span class="var">trig</span> = <span class="num">9</span>;
+<span class="kw">const int</span> <span class="var">echo</span> = <span class="num">10</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="fn">pinMode</span>(<span class="var">trig</span>, <span class="type">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="var">echo</span>, <span class="type">INPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">digitalWrite</span>(<span class="var">trig</span>, <span class="type">LOW</span>);
+  <span class="fn">delayMicroseconds</span>(<span class="num">2</span>);
+  <span class="fn">digitalWrite</span>(<span class="var">trig</span>, <span class="type">HIGH</span>);
+  <span class="fn">delayMicroseconds</span>(<span class="num">10</span>);
+  <span class="fn">digitalWrite</span>(<span class="var">trig</span>, <span class="type">LOW</span>);
+
+  <span class="kw">long</span> <span class="var">dur</span> = <span class="fn">pulseIn</span>(<span class="var">echo</span>, <span class="type">HIGH</span>);
+  <span class="kw">float</span> <span class="var">dist</span> = <span class="var">dur</span> / <span class="num">58.2</span>;
+  <span class="fn">Serial.print</span>(<span class="var">dist</span>);
+  <span class="fn">Serial.println</span>(<span class="str">" cm"</span>);
+  <span class="fn">delay</span>(<span class="num">200</span>);
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 미니 프로젝트 ═══════════════════ -->
+<section id="project">
+  <div class="container">
+    <div class="section-label reveal">PRACTICE</div>
+    <h2 class="section-title reveal">미니 프로젝트 <span class="muted">— 아이디어</span></h2>
+
+    <div class="project-grid reveal">
+      <div class="project" style="--accent:var(--amber)">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--amber)"></div>
+        <div class="diff" style="color:var(--amber)">★☆☆</div>
+        <h4>자동 가로등</h4>
+        <p>조도센서로 어두워지면 LED 자동 점등</p>
+        <span class="parts" style="background:rgba(245,158,11,0.1);color:var(--amber)">CdS + LED</span>
+      </div>
+      <div class="project">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--cyan)"></div>
+        <div class="diff" style="color:var(--cyan)">★★☆</div>
+        <h4>거리 경보기</h4>
+        <p>초음파센서로 가까이 오면 LED 경고 + 시리얼 출력</p>
+        <span class="parts" style="background:rgba(6,214,160,0.1);color:var(--cyan)">HC-SR04 + LED</span>
+      </div>
+      <div class="project">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--red)"></div>
+        <div class="diff" style="color:var(--red)">★★☆</div>
+        <h4>환경 모니터</h4>
+        <p>온습도를 측정하고 시리얼 모니터에 표시</p>
+        <span class="parts" style="background:rgba(239,68,68,0.1);color:var(--red)">DHT11</span>
+      </div>
+      <div class="project">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--purple)"></div>
+        <div class="diff" style="color:var(--purple)">★★★</div>
+        <h4>LED 밝기 조절</h4>
+        <p>가변저항으로 LED 밝기를 연속 조절 (PWM)</p>
+        <span class="parts" style="background:rgba(167,139,250,0.1);color:var(--purple)">가변저항 + LED</span>
+      </div>
+    </div>
+
+    <div class="info-box tip reveal" style="margin-top:24px">
+      <span class="icon">🎯</span>
+      <div class="content"><strong>핵심 흐름:</strong> 입력(센서) → 처리(if 조건문) → 출력(LED, 시리얼) — 이 흐름을 직접 경험해보세요!</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ 치트시트 ═══════════════════ -->
+<section id="cheat">
+  <div class="container">
+    <div class="section-label reveal">CHEATSHEET</div>
+    <h2 class="section-title reveal">오늘 배운 것 <span class="muted">— 한눈에 정리</span></h2>
+
+    <h3 class="reveal" style="font-size:16px;margin-bottom:16px;font-weight:700">📌 함수 레퍼런스</h3>
+    <div class="cheat-grid reveal">
+      <div class="cheat-item"><code style="color:var(--cyan)">pinMode(핀, 모드)</code><span class="desc">핀 모드 설정</span><span class="cat" style="color:var(--text3)">설정</span></div>
+      <div class="cheat-item"><code style="color:var(--blue)">digitalWrite(핀, 값)</code><span class="desc">디지털 출력</span><span class="cat" style="color:var(--text3)">출력</span></div>
+      <div class="cheat-item"><code style="color:var(--amber)">digitalRead(핀)</code><span class="desc">디지털 입력</span><span class="cat" style="color:var(--text3)">입력</span></div>
+      <div class="cheat-item"><code style="color:var(--purple)">analogRead(핀)</code><span class="desc">아날로그 입력 (0~1023)</span><span class="cat" style="color:var(--text3)">입력</span></div>
+      <div class="cheat-item"><code style="color:var(--cyan)">Serial.begin(속도)</code><span class="desc">시리얼 통신 시작</span><span class="cat" style="color:var(--text3)">통신</span></div>
+      <div class="cheat-item"><code style="color:var(--blue)">Serial.println(값)</code><span class="desc">시리얼 출력 + 줄바꿈</span><span class="cat" style="color:var(--text3)">통신</span></div>
+      <div class="cheat-item"><code style="color:var(--amber)">delay(ms)</code><span class="desc">대기 (1000 = 1초)</span><span class="cat" style="color:var(--text3)">시간</span></div>
+      <div class="cheat-item"><code style="color:var(--red)">pulseIn(핀, 값)</code><span class="desc">펄스 시간 측정 (μs)</span><span class="cat" style="color:var(--text3)">입력</span></div>
+    </div>
+
+    <h3 class="reveal" style="font-size:16px;margin:40px 0 16px;font-weight:700">📡 사용한 센서</h3>
+    <div class="card-grid reveal">
+      <div class="card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.12)">🎛️</div>
+        <h3>가변저항</h3>
+        <p>아날로그 입력의 기본. 돌리면 0~1023 값 변화</p>
+        <span class="tag" style="background:rgba(167,139,250,0.1);color:var(--purple)">아날로그 · A0</span>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(245,158,11,0.12)">☀️</div>
+        <h3>CdS 조도센서</h3>
+        <p>빛의 밝기에 따라 저항이 변하는 광센서</p>
+        <span class="tag" style="background:rgba(245,158,11,0.1);color:var(--amber)">아날로그 · A0</span>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(239,68,68,0.12)">🌡️</div>
+        <h3>DHT11 온습도</h3>
+        <p>온도와 습도를 동시에 측정 (라이브러리 필요)</p>
+        <span class="tag" style="background:rgba(239,68,68,0.1);color:var(--red)">디지털 · D2</span>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(6,214,160,0.12)">📏</div>
+        <h3>HC-SR04 초음파</h3>
+        <p>초음파로 거리를 측정. pulseIn 함수 사용</p>
+        <span class="tag" style="background:rgba(6,214,160,0.1);color:var(--cyan)">디지털 · D9, D10</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div class="container">
+    <div class="next">
+      🚀 다음 시간: 모터 & 액추에이터 제어
+    </div>
+    <p>서보모터 · DC모터 · PWM(analogWrite) · 모터 드라이버</p>
+    <p style="margin-top:16px;color:var(--text3)">수고하셨습니다! 질문 있으면 편하게 물어보세요 🙌</p>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible') });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Active nav link
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => {
+    if(window.scrollY >= s.offsetTop - 120) cur = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if(a.getAttribute('href') === '#' + cur) a.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

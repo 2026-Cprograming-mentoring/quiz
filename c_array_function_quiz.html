@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C언어 배열·함수 복습 퀴즈</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f;
+    --surface: #0d1220;
+    --surface2: #131928;
+    --surface3: #0a0f1c;
+    --border: #1e2d4a;
+    --accent: #3d82f6;
+    --accent2: #60a5fa;
+    --gold: #f0b429;
+    --green: #22d3a6;
+    --red: #f26464;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --cyan: #06d6a0;
+    --text: #e2ecff;
+    --muted: #6b82a8;
+    --code: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(61,130,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(61,130,246,0.04) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+  .wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 40px 20px 100px; }
+  header { text-align: center; margin-bottom: 36px; animation: fadeDown .6s ease both; }
+  .tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .15em; color: var(--accent); border: 1px solid var(--border); background: rgba(61,130,246,.08); padding: 4px 12px; border-radius: 2px; margin-bottom: 14px; }
+  h1 { font-size: clamp(22px, 4vw, 36px); font-weight: 900; line-height: 1.2; letter-spacing: -.02em; background: linear-gradient(120deg, #e2ecff 30%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .subtitle { margin-top: 8px; color: var(--muted); font-size: 13px; font-weight: 300; }
+  .tab-bar { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; }
+  .tab { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .08em; padding: 7px 14px; border-radius: 3px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { border-color: var(--accent); background: rgba(61,130,246,.15); color: var(--accent2); }
+  .tab.ch1.active { border-color: var(--green); background: rgba(34,211,166,.1); color: var(--green); }
+  .tab.ch2.active { border-color: var(--purple); background: rgba(167,139,250,.1); color: var(--purple); }
+  .tab.ch3.active { border-color: var(--gold); background: rgba(240,180,41,.08); color: var(--gold); }
+  .tab.ch4.active { border-color: var(--orange); background: rgba(251,146,60,.08); color: var(--orange); }
+  .tab.ch5.active { border-color: var(--cyan); background: rgba(6,214,160,.08); color: var(--cyan); }
+  .progress-wrap { margin-bottom: 32px; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .progress-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .chapter-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); border: 1px solid var(--border); padding: 2px 8px; border-radius: 2px; background: var(--surface2); }
+  .progress-bar-wrap { background: var(--surface2); border-radius: 2px; height: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .5s ease; width: 0%; }
+  .ch-header { display: flex; align-items: center; gap: 16px; margin: 40px 0 20px; animation: fadeUp .4s ease both; }
+  .ch-header:first-child { margin-top: 0; }
+  .ch-pill { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em; padding: 4px 10px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
+  .ch-pill.p1 { background: rgba(34,211,166,.12); color: var(--green); border: 1px solid rgba(34,211,166,.3); }
+  .ch-pill.p2 { background: rgba(167,139,250,.12); color: var(--purple); border: 1px solid rgba(167,139,250,.3); }
+  .ch-pill.p3 { background: rgba(240,180,41,.1); color: var(--gold); border: 1px solid rgba(240,180,41,.25); }
+  .ch-pill.p4 { background: rgba(251,146,60,.1); color: var(--orange); border: 1px solid rgba(251,146,60,.25); }
+  .ch-pill.p5 { background: rgba(6,214,160,.1); color: var(--cyan); border: 1px solid rgba(6,214,160,.25); }
+  .ch-line { flex: 1; height: 1px; background: var(--border); }
+  .ch-title { font-size: 13px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+  .q-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 28px 32px; margin-bottom: 16px; animation: fadeUp .45s ease both; transition: border-color .3s; }
+  .q-card:hover { border-color: #2a4070; }
+  .q-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); margin-bottom: 10px; letter-spacing: .1em; }
+  .q-num.c1 { color: var(--green); }
+  .q-num.c2 { color: var(--purple); }
+  .q-num.c3 { color: var(--gold); }
+  .q-num.c4 { color: var(--orange); }
+  .q-num.c5 { color: var(--cyan); }
+  .q-text { font-size: 15.5px; font-weight: 700; line-height: 1.75; margin-bottom: 22px; color: var(--text); }
+  code { font-family: 'JetBrains Mono', monospace; background: rgba(167,139,250,.12); color: var(--code); padding: 1px 6px; border-radius: 3px; font-size: .88em; }
+  .code-block { font-family: 'JetBrains Mono', monospace; background: rgba(167,139,250,.07); color: var(--code); border: 1px solid rgba(167,139,250,.2); padding: 12px 16px; border-radius: 4px; font-size: 13px; line-height: 1.7; margin: 8px 0 20px; white-space: pre; display: block; overflow-x: auto; }
+  .options { display: flex; flex-direction: column; gap: 9px; }
+  .opt { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; transition: all .2s ease; font-size: 14px; line-height: 1.5; user-select: none; }
+  .opt:hover:not(.locked) { border-color: var(--accent); background: rgba(61,130,246,.08); transform: translateX(4px); }
+  .opt-key { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 3px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; }
+  .opt.correct { border-color: var(--green); background: rgba(34,211,166,.1); }
+  .opt.correct .opt-key { background: var(--green); color: #000; border-color: var(--green); }
+  .opt.wrong { border-color: var(--red); background: rgba(242,100,100,.08); }
+  .opt.wrong .opt-key { background: var(--red); color: #fff; border-color: var(--red); }
+  .opt.locked { cursor: default; }
+  .code-input-wrap { position: relative; margin-bottom: 12px; }
+  .code-input { width: 100%; min-height: 120px; background: #0a0e1a; border: 1px solid var(--border); border-radius: 4px; color: #c4d4ff; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.7; padding: 14px 16px; resize: vertical; outline: none; transition: border-color .2s; tab-size: 2; }
+  .code-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(61,130,246,.12); }
+  .code-input.success { border-color: var(--green); }
+  .code-input.fail { border-color: var(--red); }
+  .code-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 8px; letter-spacing: .1em; }
+  .hint-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .hint-chip { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.2); color: var(--purple); padding: 2px 8px; border-radius: 3px; }
+  .btn-submit { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; background: rgba(61,130,246,.15); color: var(--accent2); border: 1px solid var(--accent); border-radius: 4px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; margin-top: 4px; }
+  .btn-submit:hover { background: var(--accent); color: #fff; }
+  .btn-submit:disabled { opacity: .4; cursor: default; }
+  .sample-box { display: none; margin-top: 14px; background: rgba(34,211,166,.06); border: 1px solid rgba(34,211,166,.25); border-radius: 4px; padding: 12px 16px; }
+  .sample-box.show { display: block; animation: fadeUp .3s ease both; }
+  .sample-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--green); letter-spacing: .12em; margin-bottom: 8px; }
+  .sample-code { font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #9effd8; line-height: 1.65; white-space: pre-wrap; }
+  .feedback { margin-top: 14px; padding: 11px 15px; border-radius: 4px; font-size: 13px; line-height: 1.65; display: none; }
+  .feedback.show { display: block; animation: fadeUp .3s ease both; }
+  .feedback.ok { background: rgba(34,211,166,.1); border: 1px solid rgba(34,211,166,.3); color: #7fffdd; }
+  .feedback.no { background: rgba(242,100,100,.08); border: 1px solid rgba(242,100,100,.3); color: #ffaaaa; }
+  .feedback strong { color: inherit; }
+  #result { display: none; text-align: center; padding: 56px 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; animation: fadeUp .5s ease both; }
+  .score-ring { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; font-family: 'JetBrains Mono', monospace; font-size: 30px; font-weight: 700; }
+  .score-ring.great { border-color: var(--green); color: var(--green); box-shadow: 0 0 30px rgba(34,211,166,.25); }
+  .score-ring.mid { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 30px rgba(240,180,41,.2); }
+  .score-ring.low { border-color: var(--red); color: var(--red); box-shadow: 0 0 30px rgba(242,100,100,.2); }
+  #result h2 { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
+  #result > p { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; }
+  .score-summary { display: flex; justify-content: center; gap: 28px; margin: 24px 0; }
+  .score-item { text-align: center; }
+  .score-item .val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; }
+  .score-item .lbl { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: .1em; }
+  .v-correct { color: var(--green); }
+  .v-wrong { color: var(--red); }
+  .v-total { color: var(--accent); }
+  .ch-breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 20px 0 28px; text-align: left; }
+  .ch-stat { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+  .ch-stat-name { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .ch-stat-score { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 26px; background: var(--accent); color: #fff; border: none; border-radius: 4px; font-family: 'Noto Sans KR', sans-serif; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all .2s; }
+  .btn:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(61,130,246,.3); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); margin-left: 10px; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--text); background: transparent; box-shadow: none; transform: none; }
+  .actions { text-align: center; margin-top: 28px; }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @media (max-width: 600px) { .q-card { padding: 20px 16px; } .tab { font-size: 10px; padding: 6px 10px; } .score-summary { gap: 18px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="tag">C LANGUAGE · ARRAY & FUNCTION QUIZ</div>
+    <h1>배열 & 함수 복습 퀴즈</h1>
+    <p class="subtitle">배열 개념 · 배열 활용 · 함수 개념 · 함수+배열 · 코드 작성 / 총 45문제</p>
+  </header>
+
+  <div class="tab-bar" id="tabBar">
+    <button class="tab active" onclick="setTab(0)">📋 전체 (45)</button>
+    <button class="tab ch1" onclick="setTab(1)">🟢 배열 개념 (10)</button>
+    <button class="tab ch2" onclick="setTab(2)">🟣 배열 활용 (10)</button>
+    <button class="tab ch3" onclick="setTab(3)">🟡 함수 개념 (10)</button>
+    <button class="tab ch4" onclick="setTab(4)">🟠 함수+배열 (7)</button>
+    <button class="tab ch5" onclick="setTab(5)">🟢 코드 작성 (8)</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="progress-text" id="progText">0 / 45</span>
+      <span class="chapter-badge" id="chapterBadge">ARRAY & FUNCTION</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progBar"></div></div>
+  </div>
+
+  <div id="quiz"></div>
+  <div class="actions" id="actions" style="display:none">
+    <button class="btn" onclick="showResult()">📊 결과 보기</button>
+  </div>
+  <div id="result"></div>
+</div>
+
+<script>
+const questions = [
+  // ─────────────────────────────────────
+  // CH.01 배열 개념 (10)
+  // ─────────────────────────────────────
+  {ch:1,type:'mc',
+   q:"배열(Array)에 대한 설명으로 올바른 것은?",
+   opts:["서로 다른 타입의 데이터를 저장할 수 있다","같은 타입의 데이터를 연속된 메모리 공간에 저장하는 자료구조이다","배열의 크기는 실행 중에 자유롭게 변경할 수 있다","배열 인덱스는 1부터 시작한다"],
+   ans:1,
+   exp:"배열은 <strong>같은 타입</strong>의 데이터를 <strong>연속된 메모리 공간</strong>에 순서대로 저장하는 자료구조입니다. 인덱스는 항상 <strong>0</strong>부터 시작합니다."},
+  {ch:1,type:'mc',
+   q:"크기가 5인 배열 <code>int arr[5];</code>의 유효한 인덱스 범위는?",
+   opts:["1 ~ 5","0 ~ 5","0 ~ 4","1 ~ 4"],
+   ans:2,
+   exp:"크기가 5인 배열의 인덱스는 <strong>0, 1, 2, 3, 4</strong>입니다. 마지막 인덱스는 항상 <strong>크기 - 1</strong>이에요."},
+  {ch:1,type:'mc',
+   q:"다음 중 배열 선언으로 올바르지 않은 것은?",
+   opts:["<code>int arr[5] = {1, 2, 3, 4, 5};</code>","<code>int arr[] = {10, 20, 30};</code>","<code>int n = 5; int arr[n];</code>","<code>int arr[100] = {0};</code>"],
+   ans:2,
+   exp:"표준 C에서는 배열 크기에 <strong>변수를 사용할 수 없습니다</strong>. 크기는 반드시 상수(리터럴 또는 #define 상수)여야 합니다. 일부 컴파일러에서 동작하더라도 사용하지 않는 것이 좋습니다."},
+  {ch:1,type:'mc',
+   q:"<code>int arr[5] = {1, 2};</code> 실행 후 <code>arr[3]</code>의 값은?",
+   opts:["쓰레기 값 (알 수 없음)","2","0","에러 발생"],
+   ans:2,
+   exp:"일부만 초기화하면 <strong>나머지는 자동으로 0</strong>으로 채워집니다. 따라서 arr = {1, 2, 0, 0, 0}이므로 arr[3]은 <strong>0</strong>입니다."},
+  {ch:1,type:'mc',
+   q:"초기화 없이 <code>int arr[5];</code>만 선언했을 때 배열에 들어 있는 값은?",
+   opts:["전부 0","전부 -1","쓰레기 값 (예측 불가)","전부 NULL"],
+   ans:2,
+   exp:"초기화하지 않은 지역 배열에는 이전에 메모리에 남아 있던 <strong>쓰레기 값</strong>이 들어 있습니다. 반드시 초기화하는 습관을 들이세요!"},
+  {ch:1,type:'mc',
+   q:"배열의 크기(원소 개수)를 구하는 올바른 방법은?",
+   opts:["<code>sizeof(arr)</code>","<code>length(arr)</code>","<code>sizeof(arr) / sizeof(arr[0])</code>","<code>arr.length</code>"],
+   ans:2,
+   exp:"<strong>sizeof(arr)</strong>는 배열 전체 바이트 수, <strong>sizeof(arr[0])</strong>는 원소 하나의 바이트 수입니다. 나누면 원소 개수가 나옵니다. C에는 .length 같은 속성이 없어요!"},
+  {ch:1,type:'mc',
+   q:"<code>int arr[4];</code>에서 <code>arr[4] = 10;</code>을 실행하면?",
+   opts:["정상 동작한다","컴파일 에러가 발생한다","배열이 자동으로 크기가 늘어난다","배열 범위를 벗어나 예측 불가능한 동작(정의되지 않은 행동)이 발생한다"],
+   ans:3,
+   exp:"크기 4인 배열의 유효 인덱스는 0~3이므로 arr[4]는 <strong>범위 초과</strong>입니다. C는 범위를 검사하지 않아 컴파일은 되지만, 실행 시 <strong>정의되지 않은 행동(undefined behavior)</strong>이 발생합니다."},
+  {ch:1,type:'mc',
+   q:"<code>char str[] = \"Hello\";</code>에서 배열 <code>str</code>의 크기는?",
+   opts:["5","6","7","길이를 알 수 없다"],
+   ans:1,
+   exp:"문자열 \"Hello\"는 5글자이지만, 끝에 <strong>널 문자 '\\0'</strong>이 자동으로 추가되므로 배열 크기는 <strong>6</strong>입니다."},
+  {ch:1,type:'mc',
+   q:"배열 이름 <code>arr</code>은 무엇을 의미하는가?",
+   opts:["배열의 전체 크기(바이트 수)","배열의 마지막 원소 값","배열의 첫 번째 원소의 메모리 주소","배열의 원소 개수"],
+   ans:2,
+   exp:"배열 이름은 <strong>첫 번째 원소의 주소(&arr[0])</strong>와 동일합니다. 이 개념은 함수에 배열을 전달할 때 핵심이 됩니다."},
+  {ch:1,type:'mc',
+   q:"<code>int</code>가 4바이트일 때, <code>int arr[5];</code>가 차지하는 메모리 크기는?",
+   opts:["5바이트","4바이트","20바이트","9바이트"],
+   ans:2,
+   exp:"int 하나가 4바이트이므로, 5개짜리 배열은 <strong>4 × 5 = 20바이트</strong>를 차지합니다."},
+
+  // ─────────────────────────────────────
+  // CH.02 배열 활용 (10)
+  // ─────────────────────────────────────
+  {ch:2,type:'mc',
+   q:"배열의 모든 원소를 순회하는 올바른 for문은?",
+   opts:["<code>for (int i = 1; i <= size; i++)</code>","<code>for (int i = 0; i < size; i++)</code>","<code>for (int i = 0; i <= size; i++)</code>","<code>for (int i = 1; i < size; i++)</code>"],
+   ans:1,
+   exp:"인덱스는 <strong>0부터 시작</strong>하고, 조건은 <strong>i < size</strong>여야 합니다. <code>i <= size</code>로 쓰면 마지막에 범위를 벗어납니다!"},
+  {ch:2,type:'mc',
+   q:"배열의 합계를 구할 때 누적 변수 <code>sum</code>의 초기값은?",
+   opts:["1","-1","배열의 첫 번째 원소","0"],
+   ans:3,
+   exp:"합계를 구할 때 누적 변수는 <strong>0으로 초기화</strong>합니다. 1로 초기화하면 합에 1이 추가되어 결과가 틀려집니다."},
+  {ch:2,type:'mc',
+   q:"배열에서 최댓값을 찾을 때 초기값으로 가장 적절한 것은?",
+   opts:["0","99999","배열의 첫 번째 원소 <code>arr[0]</code>","배열의 마지막 원소"],
+   ans:2,
+   exp:"<strong>arr[0]</strong>으로 초기화해야 합니다. 0으로 초기화하면 모든 원소가 음수일 때 최댓값이 0이 되어버리고, 99999는 모든 값이 그보다 크면 문제됩니다."},
+  {ch:2,type:'mc',
+   q:"다음 코드의 출력 결과는?\n<code class=\"code-block\">int arr[] = {3, 7, 1, 9, 4};\nint max = arr[0];\nfor (int i = 1; i < 5; i++) {\n    if (arr[i] > max) max = arr[i];\n}\nprintf(\"%d\", max);</code>",
+   opts:["3","7","9","4"],
+   ans:2,
+   exp:"max는 arr[0]=3에서 시작하여, 7(arr[1])로 갱신, 9(arr[3])로 갱신됩니다. 최종 max는 <strong>9</strong>입니다."},
+  {ch:2,type:'mc',
+   q:"배열에서 평균을 구할 때 <code>(double)sum / n</code>에서 <code>(double)</code>을 빼면 어떤 문제가 발생하는가?",
+   opts:["컴파일 에러가 발생한다","실수 나눗셈이 되어 정확한 결과가 나온다","정수 나눗셈이 되어 소수점 이하가 잘린다","배열이 초기화되지 않는다"],
+   ans:2,
+   exp:"int끼리 나누면 <strong>정수 나눗셈</strong>이 되어 소수점이 버려집니다. 예: 439/5 = 87 (87.8이 아님). <strong>(double)</strong>로 캐스팅해야 정확한 평균이 나옵니다."},
+  {ch:2,type:'mc',
+   q:"선형 검색에서 값을 찾지 못했을 때 반환하는 관례적인 값은?",
+   opts:["0","NULL","-1","배열의 크기"],
+   ans:2,
+   exp:"배열 인덱스는 0 이상이므로, <strong>-1</strong>은 \"유효한 인덱스가 아님\" = \"찾지 못함\"을 의미하는 관례입니다."},
+  {ch:2,type:'mc',
+   q:"버블 정렬에서 두 값을 교환(swap)할 때 임시 변수가 필요한 이유는?",
+   opts:["메모리를 절약하기 위해","값을 교환하는 동안 하나의 값이 덮어씌워지는 것을 방지하기 위해","컴파일러의 최적화를 위해","배열 크기를 확인하기 위해"],
+   ans:1,
+   exp:"<code>a = b;</code>를 먼저 하면 a의 원래 값이 사라집니다. <strong>temp에 a를 미리 저장</strong>해둬야 나중에 b에 원래 a 값을 넣을 수 있습니다."},
+  {ch:2,type:'mc',
+   q:"2차원 배열 <code>int m[2][3];</code>에서 <code>m[1][2]</code>는 몇 번째 행, 몇 번째 열의 원소인가?",
+   opts:["1행 2열 (0부터 세서)","2행 3열 (1부터 세서)","2행 2열","1행 3열"],
+   ans:0,
+   exp:"<code>m[1][2]</code>는 인덱스 기준으로 <strong>1행 2열</strong>입니다. 사람이 세는 방식으로는 2번째 행의 3번째 열이에요."},
+  {ch:2,type:'mc',
+   q:"2차원 배열을 선언할 때 반드시 명시해야 하는 것은?",
+   opts:["행의 크기만","열의 크기만","행과 열 모두","둘 다 생략 가능"],
+   ans:1,
+   exp:"2차원 배열에서 <strong>열의 크기는 반드시 명시</strong>해야 합니다. 행은 초기화 값에서 추론 가능하지만, 열 크기 없이는 메모리 배치를 계산할 수 없습니다."},
+  {ch:2,type:'mc',
+   q:"문자열 <code>\"Hi\"</code>를 저장하려면 char 배열의 최소 크기는?",
+   opts:["2","3","4","1"],
+   ans:1,
+   exp:"\"Hi\"는 'H', 'i', '\\0'로 구성됩니다. 널 문자를 포함해서 <strong>최소 3칸</strong>이 필요합니다."},
+
+  // ─────────────────────────────────────
+  // CH.03 함수 개념 (10)
+  // ─────────────────────────────────────
+  {ch:3,type:'mc',
+   q:"함수(function)를 사용하는 가장 큰 이유는?",
+   opts:["프로그램 실행 속도를 높이기 위해","변수를 더 많이 선언하기 위해","코드를 재사용하고 가독성을 높이기 위해","배열을 사용하기 위해"],
+   ans:2,
+   exp:"함수는 <strong>코드의 재사용성과 가독성</strong>을 높여줍니다. 같은 작업을 여러 번 할 때 코드를 복붙하지 않고 함수 호출로 대체할 수 있습니다."},
+  {ch:3,type:'mc',
+   q:"반환형이 <code>void</code>인 함수의 특징은?",
+   opts:["반드시 <code>return 0;</code>으로 끝나야 한다","어떤 타입이든 반환할 수 있다","값을 반환하지 않는다","매개변수를 가질 수 없다"],
+   ans:2,
+   exp:"<strong>void</strong>는 '없음'을 의미합니다. void 함수는 값을 반환하지 않으며, return문을 생략하거나 빈 <code>return;</code>을 사용합니다."},
+  {ch:3,type:'mc',
+   q:"함수 프로토타입 <code>int add(int a, int b);</code>에서 끝에 붙는 기호는?",
+   opts:["콜론 <code>:</code>","중괄호 <code>{}</code>","세미콜론 <code>;</code>","괄호 <code>()</code>"],
+   ans:2,
+   exp:"함수 프로토타입(선언)은 <strong>세미콜론(;)</strong>으로 끝납니다. 함수 정의(본문 포함)와는 달리 중괄호가 없습니다."},
+  {ch:3,type:'mc',
+   q:"다음 코드의 출력 결과는?\n<code class=\"code-block\">int square(int x) { return x * x; }\nint main() {\n    printf(\"%d\", square(4));\n    return 0;\n}</code>",
+   opts:["4","8","16","에러"],
+   ans:2,
+   exp:"square(4)에서 x=4가 전달되고, return 4 * 4 = <strong>16</strong>이 반환됩니다."},
+  {ch:3,type:'mc',
+   q:"C에서 값 전달(Call by Value)의 특징은?",
+   opts:["원본 변수의 주소를 넘겨 원본을 직접 수정한다","인수의 값을 복사하여 전달하므로 원본에 영향을 주지 않는다","배열을 넘기는 방식과 동일하다","함수가 종료되어도 매개변수가 유지된다"],
+   ans:1,
+   exp:"<strong>값 전달</strong>은 인수의 값을 복사하여 매개변수에 전달합니다. 함수 내에서 매개변수를 변경해도 <strong>원본은 바뀌지 않습니다</strong>."},
+  {ch:3,type:'mc',
+   q:"함수 안에서 원본 변수를 수정하려면 어떻게 해야 하는가?",
+   opts:["<code>void f(int x)</code>처럼 값으로 전달한다","<code>void f(int *x)</code>처럼 포인터로 전달한다","전역변수를 사용한다","방법이 없다"],
+   ans:1,
+   exp:"<strong>포인터를 통해 주소를 전달</strong>하면 함수 안에서 <code>*x = 값</code>으로 원본을 직접 수정할 수 있습니다. 호출 시 <code>f(&변수)</code>로 주소를 넘깁니다."},
+  {ch:3,type:'mc',
+   q:"<code>scanf(\"%d\", &num);</code>에서 <code>&</code>를 붙이는 이유는?",
+   opts:["변수의 값을 전달하기 위해","변수의 이름을 전달하기 위해","변수의 메모리 주소를 전달하여 그 위치에 값을 저장하기 위해","컴파일 에러를 방지하기 위해"],
+   ans:2,
+   exp:"scanf는 입력받은 값을 변수에 <strong>저장</strong>해야 하므로 변수의 <strong>주소</strong>를 알아야 합니다. &는 주소 연산자입니다."},
+  {ch:3,type:'mc',
+   q:"지역변수(local variable)에 대한 설명으로 올바른 것은?",
+   opts:["프로그램 전체에서 접근 가능하다","선언된 함수 블록 내에서만 유효하며 함수 종료 시 사라진다","자동으로 0으로 초기화된다","static 키워드와 동일하다"],
+   ans:1,
+   exp:"지역변수는 해당 함수(또는 블록) 내에서만 사용 가능하고, <strong>함수가 끝나면 메모리에서 제거</strong>됩니다."},
+  {ch:3,type:'mc',
+   q:"다음 코드에서 <code>num</code>의 최종 값은?\n<code class=\"code-block\">void change(int x) { x = 100; }\nint main() {\n    int num = 5;\n    change(num);\n    printf(\"%d\", num);\n}</code>",
+   opts:["100","5","0","에러"],
+   ans:1,
+   exp:"값 전달이므로 x는 num의 <strong>복사본</strong>입니다. x를 100으로 바꿔도 원본 num은 <strong>5 그대로</strong>입니다."},
+  {ch:3,type:'mc',
+   q:"다음 코드에서 <code>num</code>의 최종 값은?\n<code class=\"code-block\">void change(int *x) { *x = 100; }\nint main() {\n    int num = 5;\n    change(&num);\n    printf(\"%d\", num);\n}</code>",
+   opts:["5","100","0","에러"],
+   ans:1,
+   exp:"포인터 전달이므로 x는 num의 <strong>주소</strong>를 가리킵니다. <code>*x = 100</code>은 원본을 직접 수정하므로 num은 <strong>100</strong>이 됩니다."},
+
+  // ─────────────────────────────────────
+  // CH.04 함수+배열 (7)
+  // ─────────────────────────────────────
+  {ch:4,type:'mc',
+   q:"배열을 함수에 전달하면 어떤 방식으로 전달되는가?",
+   opts:["값 전달 (배열 전체가 복사됨)","주소 전달 (배열의 시작 주소가 전달됨)","참조 전달 (C에서는 지원하지 않음)","전달할 수 없다"],
+   ans:1,
+   exp:"배열 이름 자체가 주소이므로, 함수에 넘기면 <strong>주소가 전달</strong>됩니다. 배열 전체가 복사되는 것이 아닙니다!"},
+  {ch:4,type:'mc',
+   q:"배열을 함수에 넘길 때 크기를 별도 매개변수로 전달하는 이유는?",
+   opts:["배열의 원소 값을 변경하기 위해","함수 안에서 sizeof로 배열 크기를 알 수 없기 때문에","C 문법에서 필수 요구사항이기 때문에","배열을 초기화하기 위해"],
+   ans:1,
+   exp:"함수 안에서 sizeof(arr)을 하면 배열 크기가 아닌 <strong>포인터 크기(4 또는 8)</strong>가 반환됩니다. 따라서 크기를 별도로 전달해야 합니다."},
+  {ch:4,type:'mc',
+   q:"다음 함수 선언 중 배열을 매개변수로 올바르게 받는 것은?",
+   opts:["<code>void f(int arr)</code>","<code>void f(int arr[], int n)</code>","<code>void f(int[] arr, int n)</code>","<code>void f(arr int[], int n)</code>"],
+   ans:1,
+   exp:"C에서 배열 매개변수는 <code>int arr[]</code> 형태로 씁니다. <strong>크기(n)도 함께 전달</strong>하는 것이 관례입니다."},
+  {ch:4,type:'mc',
+   q:"함수 안에서 배열의 원소를 수정하면 원본 배열에 어떤 영향이 있는가?",
+   opts:["원본은 변경되지 않는다 (값 전달)","원본도 변경된다 (주소가 전달되므로)","컴파일 에러가 발생한다","함수가 종료된 후에만 반영된다"],
+   ans:1,
+   exp:"배열은 <strong>항상 주소가 전달</strong>되므로, 함수 안에서 수정하면 <strong>원본도 변경</strong>됩니다. &나 * 없이도 그래요!"},
+  {ch:4,type:'mc',
+   q:"<code>void f(int arr[], int n)</code>에서 <code>int arr[]</code>은 내부적으로 무엇과 같은가?",
+   opts:["<code>int arr[100]</code>","<code>int *arr</code>","<code>int &arr</code>","<code>const int arr</code>"],
+   ans:1,
+   exp:"함수 매개변수에서 <code>int arr[]</code>은 <strong>int *arr</strong>과 완전히 동일합니다. 배열이 포인터로 변환(decay)되기 때문입니다."},
+  {ch:4,type:'mc',
+   q:"일반 변수와 배열의 함수 전달 방식 차이로 올바른 것은?",
+   opts:["일반 변수: 주소 전달 / 배열: 값 전달","일반 변수: 값 전달 / 배열: 값 전달","일반 변수: 값 전달(기본) / 배열: 주소 전달(항상)","일반 변수: 주소 전달 / 배열: 주소 전달"],
+   ans:2,
+   exp:"일반 변수는 기본적으로 <strong>값이 복사</strong>되어 전달되고, 배열은 항상 <strong>주소가 전달</strong>됩니다. 일반 변수도 포인터를 쓰면 주소 전달이 가능합니다."},
+  {ch:4,type:'mc',
+   q:"다음 코드의 출력 결과는?\n<code class=\"code-block\">void doubleIt(int arr[], int n) {\n    for (int i = 0; i < n; i++)\n        arr[i] *= 2;\n}\nint main() {\n    int data[] = {1, 2, 3};\n    doubleIt(data, 3);\n    printf(\"%d %d %d\", data[0], data[1], data[2]);\n}</code>",
+   opts:["1 2 3","2 4 6","0 0 0","에러"],
+   ans:1,
+   exp:"배열은 주소 전달이므로 doubleIt 안에서 원소를 2배로 하면 <strong>원본 data도 변경</strong>됩니다. 결과: <strong>2 4 6</strong>"},
+
+  // ─────────────────────────────────────
+  // CH.05 코드 작성 (8)
+  // ─────────────────────────────────────
+  {ch:5,type:'code',
+   q:"크기 5인 정수 배열 <code>arr</code>을 선언하고 <code>{10, 20, 30, 40, 50}</code>으로 초기화하는 코드를 작성하세요.",
+   hint:["int","arr","[5]","=","{...}"],
+   keywords:['int','arr','10','20','30','40','50'],
+   sample:"int arr[5] = {10, 20, 30, 40, 50};",
+   exp:"<strong>int arr[5]</strong>로 크기 5의 정수 배열을 선언하고, 중괄호 안에 초기값을 나열합니다."},
+  {ch:5,type:'code',
+   q:"for문을 사용하여 배열 <code>arr</code>의 모든 원소를 출력하는 코드를 작성하세요. (배열 크기: <code>n</code>)",
+   hint:["for","i = 0","i < n","arr[i]","printf"],
+   keywords:['for','i','arr[i]','printf'],
+   sample:'for (int i = 0; i < n; i++) {\n    printf("%d ", arr[i]);\n}',
+   exp:"i를 0부터 n 미만까지 증가시키며 <strong>arr[i]</strong>를 출력합니다. 조건은 <code>i < n</code>이어야 범위 초과를 방지합니다."},
+  {ch:5,type:'code',
+   q:"정수 배열 <code>arr</code>과 크기 <code>n</code>을 받아 합계를 반환하는 함수 <code>getSum</code>을 작성하세요.",
+   hint:["int getSum(int arr[], int n)","sum = 0","for","return sum"],
+   keywords:['int','getsum','arr[]','for','return','sum'],
+   sample:'int getSum(int arr[], int n) {\n    int sum = 0;\n    for (int i = 0; i < n; i++)\n        sum += arr[i];\n    return sum;\n}',
+   exp:"매개변수로 <strong>int arr[]</strong>과 크기 <strong>n</strong>을 받고, for문으로 누적 합산하여 <strong>return</strong>합니다."},
+  {ch:5,type:'code',
+   q:"두 정수의 값을 교환하는 <code>swap</code> 함수를 포인터를 사용하여 작성하세요.",
+   hint:["void swap(int *a, int *b)","temp","*a","*b"],
+   keywords:['void','swap','int','*a','*b','temp'],
+   sample:'void swap(int *a, int *b) {\n    int temp = *a;\n    *a = *b;\n    *b = temp;\n}',
+   exp:"포인터로 주소를 받아 <strong>*a, *b</strong>로 원본에 접근합니다. 임시 변수 <strong>temp</strong>를 사용해 값을 교환합니다."},
+  {ch:5,type:'code',
+   q:"배열에서 최댓값을 찾아 반환하는 함수 <code>getMax</code>를 작성하세요.",
+   hint:["int getMax(int arr[], int n)","max = arr[0]","if (arr[i] > max)","return"],
+   keywords:['int','getmax','arr[0]','if','return','max'],
+   sample:'int getMax(int arr[], int n) {\n    int max = arr[0];\n    for (int i = 1; i < n; i++) {\n        if (arr[i] > max) max = arr[i];\n    }\n    return max;\n}',
+   exp:"<strong>arr[0]</strong>으로 초기화하고, 1부터 순회하며 더 큰 값이 있으면 갱신합니다."},
+  {ch:5,type:'code',
+   q:"2차원 배열 <code>int m[2][3]</code>의 모든 원소를 이중 for문으로 출력하는 코드를 작성하세요.",
+   hint:["for i (행)","for j (열)","m[i][j]","printf"],
+   keywords:['for','m[i][j]','printf'],
+   sample:'for (int i = 0; i < 2; i++) {\n    for (int j = 0; j < 3; j++) {\n        printf("%d ", m[i][j]);\n    }\n    printf("\\n");\n}',
+   exp:"바깥 for문이 <strong>행(i)</strong>, 안쪽 for문이 <strong>열(j)</strong>을 순회합니다. 2차원 배열 = 이중 for문!"},
+  {ch:5,type:'code',
+   q:"정수 배열에서 특정 값 <code>target</code>을 찾아 인덱스를 반환하는 함수 <code>search</code>를 작성하세요. 못 찾으면 <code>-1</code>을 반환.",
+   hint:["int search(int arr[], int n, int target)","if (arr[i] == target)","return i","return -1"],
+   keywords:['int','search','if','arr[i]','target','return','-1'],
+   sample:'int search(int arr[], int n, int target) {\n    for (int i = 0; i < n; i++) {\n        if (arr[i] == target)\n            return i;\n    }\n    return -1;\n}',
+   exp:"순서대로 비교하다 찾으면 <strong>return i</strong>로 인덱스를 반환하고, 끝까지 못 찾으면 <strong>return -1</strong>합니다."},
+  {ch:5,type:'code',
+   q:"배열의 원소 순서를 뒤집는 함수 <code>reverse</code>를 작성하세요.",
+   hint:["void reverse(int arr[], int n)","swap","i < n/2","arr[n-1-i]"],
+   keywords:['void','reverse','temp','arr[n'],
+   sample:'void reverse(int arr[], int n) {\n    for (int i = 0; i < n / 2; i++) {\n        int temp = arr[i];\n        arr[i] = arr[n - 1 - i];\n        arr[n - 1 - i] = temp;\n    }\n}',
+   exp:"양쪽 끝에서 가운데로 오면서 <strong>swap</strong>합니다. 반만 돌면 됩니다 (<code>i < n/2</code>)."},
+];
+
+let currentTab = 0;
+const answered = new Array(questions.length).fill(false);
+const results = new Array(questions.length).fill(null);
+
+const chInfo = {
+  0: { name: 'ARRAY & FUNCTION' },
+  1: { name: '배열 개념', color: 'ch1' },
+  2: { name: '배열 활용', color: 'ch2' },
+  3: { name: '함수 개념', color: 'ch3' },
+  4: { name: '함수+배열', color: 'ch4' },
+  5: { name: '코드 작성', color: 'ch5' },
+};
+const chDivInfo = {
+  1: { pill:'p1', label:'CH.01 — 배열 개념', sub:'Array Basics' },
+  2: { pill:'p2', label:'CH.02 — 배열 활용', sub:'Array Patterns' },
+  3: { pill:'p3', label:'CH.03 — 함수 개념', sub:'Functions' },
+  4: { pill:'p4', label:'CH.04 — 함수+배열', sub:'Functions & Arrays' },
+  5: { pill:'p5', label:'CH.05 — 코드 작성', sub:'Coding Practice' },
+};
+
+function visibleIndices() {
+  if (currentTab === 0) return questions.map((_,i) => i);
+  return questions.reduce((acc,q,i) => { if (q.ch === currentTab) acc.push(i); return acc; }, []);
+}
+
+function setTab(ch) {
+  currentTab = ch;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i === ch));
+  document.getElementById('chapterBadge').textContent = chInfo[ch].name;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('actions').style.display = 'none';
+  renderQuiz();
+  updateProgress();
+  scrollToTop();
+}
+
+function renderQuiz() {
+  const container = document.getElementById('quiz');
+  container.style.display = 'block';
+  container.innerHTML = '';
+  const indices = visibleIndices();
+  let lastCh = -1, displayNum = 0;
+
+  indices.forEach(gi => {
+    const q = questions[gi];
+    if (currentTab === 0 && q.ch !== lastCh) {
+      const d = chDivInfo[q.ch];
+      const div = document.createElement('div');
+      div.className = 'ch-header';
+      div.innerHTML = `<div class="ch-pill ${d.pill}">${d.label}</div><div class="ch-line"></div><div class="ch-title">${d.sub}</div>`;
+      container.appendChild(div);
+      lastCh = q.ch;
+    }
+    displayNum++;
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `card-${gi}`;
+    card.style.animationDelay = `${displayNum * 0.035}s`;
+    const numClass = `c${q.ch}`;
+    const prefix = q.type === 'code' ? `CODE-${String(displayNum).padStart(2,'0')}` : `Q${String(displayNum).padStart(2,'0')}`;
+    const qText = q.q.replace(/\n/g, '<br>');
+
+    if (q.type === 'mc') {
+      card.innerHTML = `
+        <div class="q-num ${numClass}">// ${prefix}</div>
+        <div class="q-text">${qText}</div>
+        <div class="options" id="opts-${gi}">
+          ${q.opts.map((o,j) => `
+            <div class="opt ${answered[gi]?'locked':''}" id="opt-${gi}-${j}" onclick="choose(${gi},${j})">
+              <span class="opt-key">${['A','B','C','D'][j]}</span><span>${o}</span>
+            </div>`).join('')}
+        </div>
+        <div class="feedback ${answered[gi]?'show '+(results[gi]?'ok':'no'):''}" id="fb-${gi}">
+          ${answered[gi] ? (results[gi]?'✓ 정답입니다! ':'✗ 오답입니다. ') + q.exp : ''}
+        </div>`;
+      if (answered[gi]) {
+        setTimeout(() => {
+          document.querySelectorAll(`#opts-${gi} .opt`).forEach((el, j) => {
+            el.classList.add('locked');
+            if (j === q.ans) el.classList.add('correct');
+          });
+        }, 0);
+      }
+    } else {
+      const hintHtml = q.hint.map(h => `<span class="hint-chip">${h}</span>`).join('');
+      const isA = answered[gi], isOk = results[gi];
+      card.innerHTML = `
+        <div class="q-num ${numClass}">// ${prefix} — 코드 작성</div>
+        <div class="q-text">${qText}</div>
+        <div class="hint-chips">${hintHtml}</div>
+        <div class="code-label">// 코드를 입력하세요</div>
+        <div class="code-input-wrap">
+          <textarea class="code-input ${isA?(isOk?'success':'fail'):''}" id="code-input-${gi}" placeholder="여기에 C 코드를 작성하세요..." ${isA?'readonly':''} spellcheck="false">${savedCode[gi]||''}</textarea>
+        </div>
+        <button class="btn-submit" id="btn-${gi}" onclick="submitCode(${gi})" ${isA?'disabled':''}>${isA?(isOk?'✓ 제출 완료':'✗ 제출됨'):'▶ 제출하기'}</button>
+        <div class="feedback ${isA?'show '+(isOk?'ok':'no'):''}" id="fb-${gi}">${isA?(isOk?'✓ 핵심 키워드를 모두 포함했습니다! ':'✗ 일부 키워드가 누락되었습니다. ')+q.exp:''}</div>
+        <div class="sample-box ${isA?'show':''}" id="sample-${gi}"><div class="sample-label">// 모범 답안</div><pre class="sample-code">${q.sample}</pre></div>`;
+    }
+    container.appendChild(card);
+  });
+}
+
+function choose(gi, oi) {
+  if (answered[gi]) return;
+  answered[gi] = true;
+  const q = questions[gi];
+  results[gi] = (oi === q.ans);
+  document.querySelectorAll(`#opts-${gi} .opt`).forEach((el, j) => {
+    el.classList.add('locked');
+    if (j === q.ans) el.classList.add('correct');
+    else if (j === oi) el.classList.add('wrong');
+  });
+  const fb = document.getElementById(`fb-${gi}`);
+  fb.className = `feedback show ${results[gi] ? 'ok' : 'no'}`;
+  fb.innerHTML = (results[gi] ? '✓ 정답입니다! ' : '✗ 오답입니다. ') + q.exp;
+  updateProgress();
+  checkAllDone();
+}
+
+const savedCode = {};
+function submitCode(gi) {
+  const q = questions[gi];
+  const textarea = document.getElementById(`code-input-${gi}`);
+  const userCode = textarea.value;
+  savedCode[gi] = userCode;
+  const normalized = userCode.toLowerCase().replace(/\s+/g,' ');
+  const ok = q.keywords.every(kw => normalized.includes(kw.toLowerCase()));
+  answered[gi] = true;
+  results[gi] = ok;
+  textarea.classList.add(ok ? 'success' : 'fail');
+  textarea.setAttribute('readonly', true);
+  const btn = document.getElementById(`btn-${gi}`);
+  btn.disabled = true;
+  btn.textContent = ok ? '✓ 제출 완료' : '✗ 제출됨';
+  const fb = document.getElementById(`fb-${gi}`);
+  fb.className = `feedback show ${ok ? 'ok' : 'no'}`;
+  fb.innerHTML = (ok ? '✓ 핵심 키워드를 모두 포함했습니다! ' : '✗ 일부 키워드가 누락되었습니다. ') + q.exp;
+  document.getElementById(`sample-${gi}`).classList.add('show');
+  updateProgress();
+  checkAllDone();
+}
+
+function updateProgress() {
+  const vis = visibleIndices();
+  const done = vis.filter(i => answered[i]).length;
+  const total = vis.length;
+  const pct = total > 0 ? (done / total * 100).toFixed(0) : 0;
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progText').textContent = `${done} / ${total}`;
+}
+
+function checkAllDone() {
+  const vis = visibleIndices();
+  if (vis.every(i => answered[i])) {
+    document.getElementById('actions').style.display = 'block';
+    setTimeout(() => document.getElementById('actions').scrollIntoView({ behavior: 'smooth' }), 400);
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('actions').style.display = 'none';
+  const vis = visibleIndices();
+  const correct = vis.filter(i => results[i] === true).length;
+  const wrong = vis.filter(i => results[i] === false).length;
+  const total = vis.length;
+  const pct = Math.round(correct / total * 100);
+  let grade, cls, msg;
+  if (pct >= 80) { grade = '우수 🎉'; cls = 'great'; msg = '훌륭합니다! 배열과 함수를 잘 이해하고 있네요!'; }
+  else if (pct >= 50) { grade = '보통 📚'; cls = 'mid'; msg = '절반 이상 맞혔어요! 틀린 문제를 꼭 복습해보세요.'; }
+  else { grade = '미흡 💪'; cls = 'low'; msg = '수업 자료를 다시 꼼꼼히 읽어보세요. 할 수 있어요!'; }
+  const chs = currentTab === 0 ? [1,2,3,4,5] : [currentTab];
+  const breakdownHtml = chs.map(ch => {
+    const chVis = vis.filter(i => questions[i].ch === ch);
+    if (chVis.length === 0) return '';
+    const chCorrect = chVis.filter(i => results[i] === true).length;
+    const chPct = Math.round(chCorrect / chVis.length * 100);
+    const color = chPct >= 80 ? 'var(--green)' : chPct >= 50 ? 'var(--gold)' : 'var(--red)';
+    return `<div class="ch-stat"><div class="ch-stat-name">${chInfo[ch].name}</div><div class="ch-stat-score" style="color:${color}">${chCorrect}/${chVis.length} (${chPct}%)</div></div>`;
+  }).join('');
+  const res = document.getElementById('result');
+  res.style.display = 'block';
+  res.innerHTML = `
+    <div class="score-ring ${cls}">${pct}%</div>
+    <h2>${grade} — ${pct}점</h2>
+    <p>${msg}</p>
+    <div class="score-summary">
+      <div class="score-item"><div class="val v-correct">${correct}</div><div class="lbl">CORRECT</div></div>
+      <div class="score-item"><div class="val v-wrong">${wrong}</div><div class="lbl">WRONG</div></div>
+      <div class="score-item"><div class="val v-total">${total}</div><div class="lbl">TOTAL</div></div>
+    </div>
+    ${chs.length > 1 ? `<div class="ch-breakdown">${breakdownHtml}</div>` : ''}
+    <button class="btn" onclick="restart()">↺ 다시 풀기</button>
+    <button class="btn btn-ghost" onclick="reviewAnswers()">답안 검토</button>`;
+  scrollToTop();
+}
+
+function restart() {
+  const vis = visibleIndices();
+  vis.forEach(i => { answered[i] = false; results[i] = null; delete savedCode[i]; });
+  document.getElementById('result').style.display = 'none';
+  renderQuiz();
+  updateProgress();
+  scrollToTop();
+}
+
+function reviewAnswers() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  scrollToTop();
+}
+
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+renderQuiz();
+updateProgress();
+</script>
+</body>
+</html>

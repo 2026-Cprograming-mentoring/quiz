@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아두이노 2주차 — 모터 & 액추에이터</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0e1a;--bg2:#111827;--surface:#1a1f35;--surface2:#232942;--border:#2a3155;--cyan:#06d6a0;--cyan2:#00e5cc;--blue:#3b82f6;--amber:#f59e0b;--red:#ef4444;--purple:#a78bfa;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--code-bg:#0d1117;--font-head:'Noto Sans KR',sans-serif;--font-code:'JetBrains Mono',monospace}
+html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:var(--font-head);font-weight:400;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(circle at 20% 50%,rgba(6,214,160,0.03) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(59,130,246,0.03) 0%,transparent 50%),radial-gradient(circle at 50% 80%,rgba(167,139,250,0.03) 0%,transparent 50%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(6,214,160,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(6,214,160,0.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.container{max-width:960px;margin:0 auto;padding:0 24px;position:relative;z-index:1}nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 0}nav .container{display:flex;align-items:center;gap:16px;overflow-x:auto;scrollbar-width:none}nav .container::-webkit-scrollbar{display:none}.nav-logo{font-family:var(--font-code);font-weight:700;font-size:14px;color:var(--cyan);white-space:nowrap;letter-spacing:1px}.nav-logo span{color:var(--text3)}.nav-links{display:flex;gap:4px;flex-shrink:0}.nav-links a{font-size:12px;color:var(--text3);text-decoration:none;padding:6px 12px;border-radius:6px;white-space:nowrap;transition:all .2s;font-weight:600}.nav-links a:hover,.nav-links a.active{color:var(--cyan);background:rgba(6,214,160,0.08)}
+.hero{padding:100px 0 80px;position:relative;overflow:hidden}.hero::before{content:'';position:absolute;top:-100px;right:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(6,214,160,0.08) 0%,transparent 70%);border-radius:50%}.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.2);padding:6px 16px;border-radius:100px;font-size:13px;color:var(--cyan);font-weight:600;margin-bottom:24px;animation:fadeUp .6s ease both}.hero-badge::before{content:'●';font-size:8px;animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}.hero h1{font-size:clamp(36px,6vw,56px);font-weight:900;line-height:1.15;letter-spacing:-2px;margin-bottom:16px;animation:fadeUp .6s .1s ease both}.hero h1 .accent{background:linear-gradient(135deg,var(--cyan),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}.hero p{font-size:18px;color:var(--text2);max-width:540px;animation:fadeUp .6s .2s ease both}@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+section{padding:80px 0;border-top:1px solid var(--border)}.section-label{font-family:var(--font-code);font-size:12px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:3px;margin-bottom:12px}.section-title{font-size:clamp(26px,4vw,36px);font-weight:900;letter-spacing:-1px;margin-bottom:40px;line-height:1.2}.section-title .muted{color:var(--text3);font-weight:400}
+.code-section{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}@media(max-width:700px){.code-section{grid-template-columns:1fr}}.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden}.code-header{display:flex;align-items:center;gap:8px;padding:14px 20px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border)}.code-dots{display:flex;gap:6px}.code-dots span{width:10px;height:10px;border-radius:50%;background:var(--border)}.code-dots span:nth-child(1){background:#ef4444}.code-dots span:nth-child(2){background:#f59e0b}.code-dots span:nth-child(3){background:#22c55e}.code-title{font-family:var(--font-code);font-size:12px;color:var(--text3);margin-left:auto}pre{padding:20px;margin:0;overflow-x:auto;font-family:var(--font-code);font-size:13px;line-height:1.8}pre .kw{color:#ff7b72}pre .fn{color:#d2a8ff}pre .str{color:#a5d6ff}pre .num{color:#79c0ff}pre .cmt{color:#484f58;font-style:italic}pre .type{color:#ffa657}pre .var{color:var(--cyan2)}pre .pp{color:#ff7b72}pre .inc{color:#a5d6ff}
+.info-box{border-radius:14px;padding:24px 28px;margin:24px 0;display:flex;gap:16px;align-items:flex-start}.info-box.tip{background:rgba(6,214,160,0.06);border-left:3px solid var(--cyan)}.info-box.warn{background:rgba(245,158,11,0.06);border-left:3px solid var(--amber)}.info-box.danger{background:rgba(239,68,68,0.06);border-left:3px solid var(--red)}.info-box.note{background:rgba(59,130,246,0.06);border-left:3px solid var(--blue)}.info-box .icon{font-size:20px;flex-shrink:0;margin-top:2px}.info-box .content{font-size:14px;color:var(--text2);line-height:1.7}.info-box .content strong{color:var(--text)}
+.func-ref{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:12px 0;display:flex;align-items:center;gap:20px;transition:all .3s}.func-ref:hover{border-color:rgba(6,214,160,0.3)}.func-ref .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.func-ref code{font-family:var(--font-code);font-size:14px;font-weight:600;white-space:nowrap}.func-ref .desc{font-size:13px;color:var(--text2);margin-left:auto;text-align:right}
+.sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin:24px 0}.sensor-header{padding:24px 28px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s}.sensor-header:hover{background:rgba(255,255,255,0.02)}.sensor-header .emoji{font-size:28px}.sensor-header h3{font-size:20px;font-weight:700;letter-spacing:-0.3px;flex:1}.sensor-header .chevron{color:var(--text3);transition:transform .3s;font-size:20px}.sensor-card.open .sensor-header .chevron{transform:rotate(180deg)}.sensor-body{max-height:0;overflow:hidden;transition:max-height .4s ease}.sensor-card.open .sensor-body{max-height:5000px}.sensor-content{padding:28px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .3s;position:relative;overflow:hidden}.card:hover{border-color:rgba(6,214,160,0.3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(6,214,160,0.06)}.card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}.card h3{font-size:17px;font-weight:700;margin-bottom:8px}.card p{font-size:14px;color:var(--text2);line-height:1.6}.card .tag{display:inline-block;margin-top:12px;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:4px 10px;border-radius:6px}
+.project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}.project{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative;overflow:hidden;transition:all .3s}.project:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.3)}.project .diff{font-size:14px;letter-spacing:2px;margin-bottom:12px}.project h4{font-size:16px;font-weight:700;margin-bottom:8px}.project p{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5}.project .parts{font-family:var(--font-code);font-size:11px;padding:6px 12px;border-radius:8px;display:inline-block}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:32px}.toc-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 14px;text-align:center;text-decoration:none;color:var(--text);transition:all .3s}.toc-card:hover{border-color:var(--cyan);transform:translateY(-2px)}.toc-card .num{font-family:var(--font-code);font-size:22px;font-weight:700;display:block;margin-bottom:6px}.toc-card .label{font-size:12px;font-weight:600}.toc-card .sub{font-size:10px;color:var(--text3);margin-top:4px}
+.cheat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.cheat-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;transition:all .3s}.cheat-item:hover{border-color:rgba(6,214,160,0.3)}.cheat-item code{font-family:var(--font-code);font-size:13px;font-weight:600;display:block;margin-bottom:4px}.cheat-item .desc{font-size:12px;color:var(--text2)}.cheat-item .cat{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:8px}
+.cmp-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}.cmp-table th{text-align:left;padding:12px 16px;background:var(--surface);border-bottom:2px solid var(--border);font-weight:700;font-size:12px;color:var(--text3)}.cmp-table td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text2)}.cmp-table tr:hover td{background:rgba(6,214,160,0.02)}
+footer{border-top:1px solid var(--border);padding:40px 0;text-align:center;color:var(--text3);font-size:13px}footer .next{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,rgba(6,214,160,0.1),rgba(59,130,246,0.1));border:1px solid rgba(6,214,160,0.2);padding:16px 32px;border-radius:14px;font-size:16px;font-weight:700;color:var(--cyan);margin-bottom:20px}
+.reveal{opacity:0;transform:translateY(24px);transition:all .6s ease}.reveal.visible{opacity:1;transform:translateY(0)}@media(max-width:600px){.code-section{grid-template-columns:1fr}.toc-grid{grid-template-columns:repeat(3,1fr)}section{padding:50px 0}}
+</style>
+</head>
+<body>
+<nav><div class="container"><div class="nav-logo">Arduino<span>.week2</span></div><div class="nav-links"><a href="#review">복습</a><a href="#pwm">PWM</a><a href="#servo">서보모터</a><a href="#dcmotor">DC모터</a><a href="#buzzer">부저</a><a href="#combine">센서+모터</a><a href="#project">프로젝트</a><a href="#cheat">정리</a></div></div></nav>
+
+<header class="hero"><div class="container">
+  <div class="hero-badge">LESSON 02</div>
+  <h1>모터 & <span class="accent">액추에이터</span></h1>
+  <p>PWM으로 속도와 밝기를 조절하고, 서보모터·DC모터·부저를 제어해봅시다.</p>
+  <div class="toc-grid">
+    <a href="#review" class="toc-card"><span class="num" style="color:var(--cyan)">01</span><span class="label">1주차 복습</span><span class="sub">핵심 정리</span></a>
+    <a href="#pwm" class="toc-card"><span class="num" style="color:var(--blue)">02</span><span class="label">PWM</span><span class="sub">analogWrite</span></a>
+    <a href="#servo" class="toc-card"><span class="num" style="color:var(--amber)">03</span><span class="label">서보모터</span><span class="sub">각도 제어</span></a>
+    <a href="#dcmotor" class="toc-card"><span class="num" style="color:var(--red)">04</span><span class="label">DC모터</span><span class="sub">속도·방향</span></a>
+    <a href="#buzzer" class="toc-card"><span class="num" style="color:var(--purple)">05</span><span class="label">부저</span><span class="sub">tone 함수</span></a>
+    <a href="#combine" class="toc-card"><span class="num" style="color:var(--cyan)">06</span><span class="label">센서+모터</span><span class="sub">입출력 연동</span></a>
+    <a href="#project" class="toc-card"><span class="num" style="color:var(--amber)">07</span><span class="label">프로젝트</span><span class="sub">종합 실습</span></a>
+  </div>
+</div></header>
+
+<section id="review"><div class="container">
+  <div class="section-label reveal">CHAPTER 01</div>
+  <h2 class="section-title reveal">1주차 복습 <span class="muted">— 지난 시간 핵심</span></h2>
+  <div class="card-grid reveal">
+    <div class="card"><div class="card-icon" style="background:rgba(6,214,160,0.12)">⚡</div><h3>디지털 출력</h3><p>digitalWrite(핀, HIGH/LOW)로 LED를 켜고 끌 수 있었어요.</p><span class="tag" style="background:rgba(6,214,160,0.1);color:var(--cyan)">pinMode · digitalWrite</span></div>
+    <div class="card"><div class="card-icon" style="background:rgba(59,130,246,0.12)">🔘</div><h3>디지털 입력</h3><p>digitalRead()로 버튼 상태를 읽고 INPUT_PULLUP으로 안정적 입력을 받았어요.</p><span class="tag" style="background:rgba(59,130,246,0.1);color:var(--blue)">digitalRead · INPUT_PULLUP</span></div>
+    <div class="card"><div class="card-icon" style="background:rgba(245,158,11,0.12)">📊</div><h3>아날로그 입력</h3><p>analogRead()로 센서 값(0~1023)을 읽고 시리얼 모니터로 확인했어요.</p><span class="tag" style="background:rgba(245,158,11,0.1);color:var(--amber)">analogRead · Serial</span></div>
+    <div class="card"><div class="card-icon" style="background:rgba(167,139,250,0.12)">🌡️</div><h3>센서 활용</h3><p>조도센서, 온습도센서(DHT11), 초음파센서(HC-SR04)를 사용해봤어요.</p><span class="tag" style="background:rgba(167,139,250,0.1);color:var(--purple)">CdS · DHT11 · HC-SR04</span></div>
+  </div>
+  <div class="info-box tip reveal"><span class="icon">💡</span><div class="content"><strong>지난 시간 = 입력(센서)</strong>, 이번 시간 = <strong>출력(모터·액추에이터)</strong>! 마지막에는 센서 입력 → 모터 출력을 연동하는 프로젝트를 해볼 거예요.</div></div>
+</div></section>
+
+<section id="pwm"><div class="container">
+  <div class="section-label reveal">CHAPTER 02</div>
+  <h2 class="section-title reveal">PWM <span class="muted">— 아날로그 출력 흉내내기</span></h2>
+  <div class="code-section reveal">
+    <div>
+      <p style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:20px">디지털 핀은 HIGH(5V) 아니면 LOW(0V)만 가능해요. 그런데 LED 밝기를 절반으로 하고 싶다면? <strong style="color:var(--cyan)">PWM(Pulse Width Modulation)</strong>은 아주 빠르게 껐다 켰다를 반복해서 <strong style="color:var(--text)">중간 밝기/속도</strong>를 만들어내는 기술이에요.</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px">
+        <h4 style="color:var(--cyan);font-size:14px;margin-bottom:12px">듀티 사이클 (Duty Cycle)</h4>
+        <div style="font-size:14px;color:var(--text2);line-height:2"><strong style="color:var(--text)">100%</strong> → 항상 켜짐 = 최대 밝기<br><strong style="color:var(--text)">50%</strong> → 절반 켜짐 = 중간 밝기<br><strong style="color:var(--text)">0%</strong> → 항상 꺼짐 = 빛 없음</div>
+      </div>
+      <div class="info-box warn" style="margin-top:16px"><span class="icon">⚠️</span><div class="content">PWM은 UNO에서 <strong>~ 표시가 있는 핀</strong>만 가능: <strong>3, 5, 6, 9, 10, 11</strong>번. 13번은 안 됩니다!</div></div>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">LED_Fade.ino</span></div>
+<pre><span class="kw">const int</span> <span class="var">ledPin</span> = <span class="num">9</span>; <span class="cmt">// PWM 핀!</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="var">ledPin</span>, <span class="type">OUTPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="cmt">// 점점 밝아지기</span>
+  <span class="kw">for</span> (<span class="type">int</span> <span class="var">i</span> = <span class="num">0</span>; <span class="var">i</span> <= <span class="num">255</span>; <span class="var">i</span>++) {
+    <span class="fn">analogWrite</span>(<span class="var">ledPin</span>, <span class="var">i</span>);
+    <span class="fn">delay</span>(<span class="num">10</span>);
+  }
+  <span class="cmt">// 점점 어두워지기</span>
+  <span class="kw">for</span> (<span class="type">int</span> <span class="var">i</span> = <span class="num">255</span>; <span class="var">i</span> >= <span class="num">0</span>; <span class="var">i</span>--) {
+    <span class="fn">analogWrite</span>(<span class="var">ledPin</span>, <span class="var">i</span>);
+    <span class="fn">delay</span>(<span class="num">10</span>);
+  }
+}</pre></div>
+  </div>
+  <h3 class="reveal" style="font-size:18px;font-weight:700;margin:40px 0 16px">핵심 함수</h3>
+  <div class="func-ref reveal"><span class="dot" style="background:var(--cyan)"></span><code style="color:var(--cyan)">analogWrite(핀, 0~255)</code><span class="desc">PWM 출력 (0=꺼짐, 255=최대)</span></div>
+  <div class="func-ref reveal"><span class="dot" style="background:var(--amber)"></span><code style="color:var(--amber)">map(값, in_min, in_max, out_min, out_max)</code><span class="desc">범위 변환</span></div>
+  <div class="info-box tip reveal"><span class="icon">💡</span><div class="content"><strong>analogRead()는 0~1023</strong>(10비트), <strong>analogWrite()는 0~255</strong>(8비트). 범위가 다르니까 센서 값으로 모터를 제어할 때 <code style="font-family:var(--font-code);color:var(--cyan)">map()</code> 함수로 변환하세요!</div></div>
+</div></section>
+
+<section id="servo"><div class="container">
+  <div class="section-label reveal">CHAPTER 03</div>
+  <h2 class="section-title reveal">서보모터 <span class="muted">— 각도 제어</span></h2>
+  <div class="code-section reveal">
+    <div>
+      <p style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:20px">서보모터는 <strong style="color:var(--cyan)">0°~180° 범위</strong>에서 원하는 각도로 회전하는 모터예요. 문 잠금장치, 로봇 팔 관절, RC카 핸들 등에 사용돼요.</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px">
+        <h4 style="color:var(--amber);font-size:14px;margin-bottom:12px">🔌 핀 연결 (3핀)</h4>
+        <div style="font-family:var(--font-code);font-size:13px;line-height:2;color:var(--text)"><span style="color:var(--red)">빨간선</span> → 5V (전원)<br><span style="color:var(--text3)">갈색/검정선</span> → GND<br><span style="color:var(--amber)">주황/노란선</span> → 디지털 핀 (9번 추천)</div>
+      </div>
+      <div class="info-box note" style="margin-top:16px"><span class="icon">📌</span><div class="content"><strong>Servo 라이브러리</strong>는 아두이노에 기본 내장! 별도 설치 필요 없어요.</div></div>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">Servo_Basic.ino</span></div>
+<pre><span class="pp">#include</span> <span class="inc">&lt;Servo.h&gt;</span>
+
+<span class="type">Servo</span> <span class="var">myServo</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="var">myServo</span>.<span class="fn">attach</span>(<span class="num">9</span>); <span class="cmt">// 9번 핀에 연결</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="var">myServo</span>.<span class="fn">write</span>(<span class="num">0</span>);    <span class="cmt">// 0도</span>
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+  <span class="var">myServo</span>.<span class="fn">write</span>(<span class="num">90</span>);   <span class="cmt">// 90도</span>
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+  <span class="var">myServo</span>.<span class="fn">write</span>(<span class="num">180</span>);  <span class="cmt">// 180도</span>
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+}</pre></div>
+  </div>
+  <h3 class="reveal" style="font-size:18px;font-weight:700;margin:40px 0 16px">서보 핵심 함수</h3>
+  <div class="func-ref reveal"><span class="dot" style="background:var(--amber)"></span><code style="color:var(--amber)">myServo.attach(핀)</code><span class="desc">서보를 핀에 연결</span></div>
+  <div class="func-ref reveal"><span class="dot" style="background:var(--cyan)"></span><code style="color:var(--cyan)">myServo.write(각도)</code><span class="desc">0~180도 회전</span></div>
+  <div class="func-ref reveal"><span class="dot" style="background:var(--purple)"></span><code style="color:var(--purple)">myServo.read()</code><span class="desc">현재 각도 읽기</span></div>
+
+  <h3 class="reveal" style="font-size:18px;font-weight:700;margin:40px 0 16px">응용: 가변저항으로 서보 제어</h3>
+  <div class="code-block reveal"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">Servo_Pot.ino</span></div>
+<pre><span class="pp">#include</span> <span class="inc">&lt;Servo.h&gt;</span>
+<span class="type">Servo</span> <span class="var">myServo</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() { <span class="var">myServo</span>.<span class="fn">attach</span>(<span class="num">9</span>); }
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="type">int</span> <span class="var">val</span> = <span class="fn">analogRead</span>(<span class="type">A0</span>);        <span class="cmt">// 0~1023</span>
+  <span class="type">int</span> <span class="var">angle</span> = <span class="fn">map</span>(<span class="var">val</span>, <span class="num">0</span>, <span class="num">1023</span>, <span class="num">0</span>, <span class="num">180</span>); <span class="cmt">// → 0~180</span>
+  <span class="var">myServo</span>.<span class="fn">write</span>(<span class="var">angle</span>);
+  <span class="fn">delay</span>(<span class="num">15</span>);
+}</pre></div>
+  <div class="info-box tip reveal"><span class="icon">💡</span><div class="content"><strong>map(val, 0, 1023, 0, 180)</strong>이 핵심! 가변저항 값(0~1023)을 서보 각도(0~180)로 변환합니다.</div></div>
+</div></section>
+
+<section id="dcmotor"><div class="container">
+  <div class="section-label reveal">CHAPTER 04</div>
+  <h2 class="section-title reveal">DC모터 <span class="muted">— 속도 & 방향 제어</span></h2>
+  <div class="code-section reveal">
+    <div>
+      <p style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:20px">DC모터는 <strong style="color:var(--cyan)">계속 회전</strong>하는 모터예요. 선풍기, 자동차 바퀴 등에 쓰여요. 서보모터와 달리 <strong style="color:var(--text)">속도와 방향</strong>을 제어합니다.</p>
+      <div class="info-box danger"><span class="icon">🚨</span><div class="content"><strong>아두이노 핀으로 직접 DC모터를 돌리면 안 돼요!</strong> 모터는 전류가 많이 필요해서 아두이노가 고장날 수 있어요. 반드시 <strong>모터 드라이버</strong>를 사용하세요.</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-top:16px">
+        <h4 style="color:var(--red);font-size:14px;margin-bottom:12px">L298N 모터 드라이버</h4>
+        <div style="font-size:14px;color:var(--text2);line-height:1.8">모터에 충분한 전류를 공급하는 중간 다리 역할.<br><strong style="color:var(--text)">2개의 DC모터</strong>를 동시에 제어 가능하고,<br><strong style="color:var(--text)">방향 전환</strong>(정회전/역회전)도 가능해요.</div>
+      </div>
+    </div>
+    <div>
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:14px;padding:20px 24px;margin-bottom:16px">
+        <h4 style="color:var(--amber);font-size:14px;margin-bottom:12px">🔌 L298N 핀 연결</h4>
+        <div style="font-family:var(--font-code);font-size:12px;line-height:2.2;color:var(--text)">ENA → 아두이노 PWM핀 (속도)<br>IN1 → 디지털 핀 (방향 1)<br>IN2 → 디지털 핀 (방향 2)<br>OUT1, OUT2 → 모터 연결<br>12V → 외부 전원<br>GND → 공통 GND (아두이노와 공유!)</div>
+      </div>
+      <table class="cmp-table" style="font-size:13px"><thead><tr><th>IN1</th><th>IN2</th><th>동작</th></tr></thead><tbody><tr><td>HIGH</td><td>LOW</td><td><strong style="color:var(--cyan)">정회전</strong></td></tr><tr><td>LOW</td><td>HIGH</td><td><strong style="color:var(--amber)">역회전</strong></td></tr><tr><td>LOW</td><td>LOW</td><td><strong style="color:var(--red)">정지</strong></td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="code-block reveal" style="margin-top:24px"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">DC_Motor.ino</span></div>
+<pre><span class="kw">const int</span> <span class="var">ENA</span> = <span class="num">9</span>;  <span class="cmt">// 속도 (PWM)</span>
+<span class="kw">const int</span> <span class="var">IN1</span> = <span class="num">7</span>;  <span class="cmt">// 방향 1</span>
+<span class="kw">const int</span> <span class="var">IN2</span> = <span class="num">8</span>;  <span class="cmt">// 방향 2</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="var">ENA</span>, <span class="type">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="var">IN1</span>, <span class="type">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="var">IN2</span>, <span class="type">OUTPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="cmt">// 정회전 (중간 속도)</span>
+  <span class="fn">digitalWrite</span>(<span class="var">IN1</span>, <span class="type">HIGH</span>);
+  <span class="fn">digitalWrite</span>(<span class="var">IN2</span>, <span class="type">LOW</span>);
+  <span class="fn">analogWrite</span>(<span class="var">ENA</span>, <span class="num">150</span>);
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+
+  <span class="cmt">// 역회전 (최대 속도)</span>
+  <span class="fn">digitalWrite</span>(<span class="var">IN1</span>, <span class="type">LOW</span>);
+  <span class="fn">digitalWrite</span>(<span class="var">IN2</span>, <span class="type">HIGH</span>);
+  <span class="fn">analogWrite</span>(<span class="var">ENA</span>, <span class="num">255</span>);
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+
+  <span class="cmt">// 정지</span>
+  <span class="fn">digitalWrite</span>(<span class="var">IN1</span>, <span class="type">LOW</span>);
+  <span class="fn">digitalWrite</span>(<span class="var">IN2</span>, <span class="type">LOW</span>);
+  <span class="fn">delay</span>(<span class="num">1000</span>);
+}</pre></div>
+  <div class="info-box warn reveal"><span class="icon">⚠️</span><div class="content"><strong>GND를 꼭 공유하세요!</strong> 외부 전원과 아두이노의 GND를 연결하지 않으면 모터가 동작하지 않거나 불안정해요.</div></div>
+</div></section>
+
+<section id="buzzer"><div class="container">
+  <div class="section-label reveal">CHAPTER 05</div>
+  <h2 class="section-title reveal">피에조 부저 <span class="muted">— 소리 출력</span></h2>
+  <div class="code-section reveal">
+    <div>
+      <p style="font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:20px">부저는 전기 신호를 소리로 변환하는 부품이에요. <strong style="color:var(--cyan)">주파수</strong>를 바꾸면 음높이가 달라지고, <strong style="color:var(--text)">지속 시간</strong>을 바꾸면 음의 길이가 달라져요.</p>
+      <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:14px;padding:20px 24px">
+        <h4 style="color:var(--amber);font-size:14px;margin-bottom:8px">주요 음계 주파수</h4>
+        <div style="font-family:var(--font-code);font-size:12px;line-height:2;color:var(--text)">도(C4)=262 · 레(D4)=294 · 미(E4)=330<br>파(F4)=349 · 솔(G4)=392 · 라(A4)=440<br>시(B4)=494 · 높은도(C5)=523</div>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-top:12px">연결: + → 디지털 핀 (8번), - → GND</div>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">Buzzer_Melody.ino</span></div>
+<pre><span class="kw">const int</span> <span class="var">buzzer</span> = <span class="num">8</span>;
+
+<span class="type">int</span> <span class="var">melody</span>[] = {
+  <span class="num">262</span>, <span class="num">294</span>, <span class="num">330</span>, <span class="num">349</span>,
+  <span class="num">392</span>, <span class="num">440</span>, <span class="num">494</span>, <span class="num">523</span>
+};
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="kw">for</span> (<span class="type">int</span> <span class="var">i</span> = <span class="num">0</span>; <span class="var">i</span> < <span class="num">8</span>; <span class="var">i</span>++) {
+    <span class="fn">tone</span>(<span class="var">buzzer</span>, <span class="var">melody</span>[<span class="var">i</span>], <span class="num">400</span>);
+    <span class="fn">delay</span>(<span class="num">500</span>);
+  }
+  <span class="fn">noTone</span>(<span class="var">buzzer</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() { }</pre></div>
+  </div>
+  <h3 class="reveal" style="font-size:18px;font-weight:700;margin:32px 0 16px">부저 핵심 함수</h3>
+  <div class="func-ref reveal"><span class="dot" style="background:var(--purple)"></span><code style="color:var(--purple)">tone(핀, 주파수, 지속시간)</code><span class="desc">소리 출력 (Hz, ms)</span></div>
+  <div class="func-ref reveal"><span class="dot" style="background:var(--red)"></span><code style="color:var(--red)">noTone(핀)</code><span class="desc">소리 정지</span></div>
+</div></section>
+
+<section id="combine"><div class="container">
+  <div class="section-label reveal">CHAPTER 06</div>
+  <h2 class="section-title reveal">센서 + 모터 연동 <span class="muted">— 입력 → 출력</span></h2>
+  <div class="info-box tip reveal"><span class="icon">🎯</span><div class="content"><strong>핵심 흐름:</strong> 센서(입력) → 조건 판단(처리) → 모터/부저(출력). 1주차 센서 + 2주차 액추에이터를 조합!</div></div>
+
+  <div class="sensor-card open reveal">
+    <div class="sensor-header" onclick="this.parentElement.classList.toggle('open')"><span class="emoji">📏</span><h3>초음파센서 → 서보모터</h3><span class="chevron">▼</span></div>
+    <div class="sensor-body"><div class="sensor-content">
+      <p style="font-size:14px;color:var(--text2);margin-bottom:16px">거리에 따라 서보모터 각도가 변하는 예제. 손을 가까이 하면 서보가 회전해요!</p>
+      <div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">Ultrasonic_Servo.ino</span></div>
+<pre><span class="pp">#include</span> <span class="inc">&lt;Servo.h&gt;</span>
+<span class="type">Servo</span> <span class="var">myServo</span>;
+<span class="kw">const int</span> <span class="var">trig</span> = <span class="num">2</span>, <span class="var">echo</span> = <span class="num">3</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="var">myServo</span>.<span class="fn">attach</span>(<span class="num">9</span>);
+  <span class="fn">pinMode</span>(<span class="var">trig</span>, <span class="type">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="var">echo</span>, <span class="type">INPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">digitalWrite</span>(<span class="var">trig</span>, <span class="type">LOW</span>);  <span class="fn">delayMicroseconds</span>(<span class="num">2</span>);
+  <span class="fn">digitalWrite</span>(<span class="var">trig</span>, <span class="type">HIGH</span>); <span class="fn">delayMicroseconds</span>(<span class="num">10</span>);
+  <span class="fn">digitalWrite</span>(<span class="var">trig</span>, <span class="type">LOW</span>);
+  <span class="type">long</span> <span class="var">dur</span> = <span class="fn">pulseIn</span>(<span class="var">echo</span>, <span class="type">HIGH</span>);
+  <span class="type">float</span> <span class="var">dist</span> = <span class="var">dur</span> / <span class="num">58.2</span>;
+
+  <span class="type">int</span> <span class="var">angle</span> = <span class="fn">map</span>(<span class="fn">constrain</span>(<span class="var">dist</span>,<span class="num">2</span>,<span class="num">30</span>), <span class="num">2</span>, <span class="num">30</span>, <span class="num">0</span>, <span class="num">180</span>);
+  <span class="var">myServo</span>.<span class="fn">write</span>(<span class="var">angle</span>);
+  <span class="fn">delay</span>(<span class="num">100</span>);
+}</pre></div>
+      <div class="func-ref"><span class="dot" style="background:var(--blue)"></span><code style="color:var(--blue)">constrain(값, 최소, 최대)</code><span class="desc">값을 범위 안으로 제한</span></div>
+    </div></div>
+  </div>
+
+  <div class="sensor-card reveal">
+    <div class="sensor-header" onclick="this.parentElement.classList.toggle('open')"><span class="emoji">🌡️</span><h3>온습도센서 → 부저 (온도 경보)</h3><span class="chevron">▼</span></div>
+    <div class="sensor-body"><div class="sensor-content">
+      <div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">Temp_Alarm.ino</span></div>
+<pre><span class="pp">#include</span> <span class="inc">"DHT.h"</span>
+<span class="type">DHT</span> <span class="var">dht</span>(<span class="num">2</span>, <span class="type">DHT11</span>);
+<span class="kw">const int</span> <span class="var">buzzer</span> = <span class="num">8</span>, <span class="var">led</span> = <span class="num">13</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">Serial.begin</span>(<span class="num">9600</span>);
+  <span class="var">dht</span>.<span class="fn">begin</span>();
+  <span class="fn">pinMode</span>(<span class="var">led</span>, <span class="type">OUTPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="type">float</span> <span class="var">t</span> = <span class="var">dht</span>.<span class="fn">readTemperature</span>();
+  <span class="fn">Serial.print</span>(<span class="var">t</span>); <span class="fn">Serial.println</span>(<span class="str">"°C"</span>);
+
+  <span class="kw">if</span> (<span class="var">t</span> > <span class="num">30</span>) {
+    <span class="fn">tone</span>(<span class="var">buzzer</span>, <span class="num">1000</span>, <span class="num">200</span>);
+    <span class="fn">digitalWrite</span>(<span class="var">led</span>, <span class="type">HIGH</span>);
+    <span class="fn">delay</span>(<span class="num">300</span>);
+    <span class="fn">digitalWrite</span>(<span class="var">led</span>, <span class="type">LOW</span>);
+  }
+  <span class="fn">delay</span>(<span class="num">2000</span>);
+}</pre></div>
+    </div></div>
+  </div>
+
+  <div class="sensor-card reveal">
+    <div class="sensor-header" onclick="this.parentElement.classList.toggle('open')"><span class="emoji">☀️</span><h3>조도센서 → DC모터 (자동 팬)</h3><span class="chevron">▼</span></div>
+    <div class="sensor-body"><div class="sensor-content">
+      <div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-title">Light_Fan.ino</span></div>
+<pre><span class="kw">const int</span> <span class="var">ENA</span> = <span class="num">9</span>, <span class="var">IN1</span> = <span class="num">7</span>, <span class="var">IN2</span> = <span class="num">8</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="var">ENA</span>, <span class="type">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="var">IN1</span>, <span class="type">OUTPUT</span>);
+  <span class="fn">pinMode</span>(<span class="var">IN2</span>, <span class="type">OUTPUT</span>);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="type">int</span> <span class="var">light</span> = <span class="fn">analogRead</span>(<span class="type">A0</span>);
+
+  <span class="kw">if</span> (<span class="var">light</span> < <span class="num">300</span>) {
+    <span class="fn">digitalWrite</span>(<span class="var">IN1</span>, <span class="type">HIGH</span>);
+    <span class="fn">digitalWrite</span>(<span class="var">IN2</span>, <span class="type">LOW</span>);
+    <span class="type">int</span> <span class="var">speed</span> = <span class="fn">map</span>(<span class="var">light</span>, <span class="num">0</span>, <span class="num">300</span>, <span class="num">255</span>, <span class="num">100</span>);
+    <span class="fn">analogWrite</span>(<span class="var">ENA</span>, <span class="var">speed</span>);
+  } <span class="kw">else</span> {
+    <span class="fn">digitalWrite</span>(<span class="var">IN1</span>, <span class="type">LOW</span>);
+    <span class="fn">digitalWrite</span>(<span class="var">IN2</span>, <span class="type">LOW</span>);
+  }
+  <span class="fn">delay</span>(<span class="num">200</span>);
+}</pre></div>
+    </div></div>
+  </div>
+</div></section>
+
+<section id="project"><div class="container">
+  <div class="section-label reveal">PRACTICE</div>
+  <h2 class="section-title reveal">미니 프로젝트 <span class="muted">— 아이디어</span></h2>
+  <div class="project-grid reveal">
+    <div class="project"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--amber)"></div><div class="diff" style="color:var(--amber)">★☆☆</div><h4>뮤직 박스</h4><p>버튼을 누르면 멜로디가 재생되는 오르골</p><span class="parts" style="background:rgba(245,158,11,0.1);color:var(--amber)">부저 + 버튼</span></div>
+    <div class="project"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--cyan)"></div><div class="diff" style="color:var(--cyan)">★★☆</div><h4>스마트 도어락</h4><p>초음파센서로 거리 감지 → 가까이 오면 서보로 잠금 해제</p><span class="parts" style="background:rgba(6,214,160,0.1);color:var(--cyan)">HC-SR04 + 서보</span></div>
+    <div class="project"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--red)"></div><div class="diff" style="color:var(--red)">★★☆</div><h4>온도 자동 팬</h4><p>온도에 따라 DC모터 속도가 자동 조절되는 선풍기</p><span class="parts" style="background:rgba(239,68,68,0.1);color:var(--red)">DHT11 + DC모터</span></div>
+    <div class="project"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--purple)"></div><div class="diff" style="color:var(--purple)">★★★</div><h4>거리 경보 시스템</h4><p>거리에 따라 부저 빈도 변화 + LED 밝기 변화 + 시리얼 출력</p><span class="parts" style="background:rgba(167,139,250,0.1);color:var(--purple)">HC-SR04 + 부저 + LED</span></div>
+  </div>
+  <div class="info-box tip reveal" style="margin-top:24px"><span class="icon">🎯</span><div class="content"><strong>프로젝트 공식:</strong> 센서(입력) + 조건문(if) + 액추에이터(출력) = 완성!</div></div>
+</div></section>
+
+<section id="cheat"><div class="container">
+  <div class="section-label reveal">CHEATSHEET</div>
+  <h2 class="section-title reveal">오늘 배운 것 <span class="muted">— 한눈에 정리</span></h2>
+  <h3 class="reveal" style="font-size:16px;margin-bottom:16px;font-weight:700">⚡ 새로 배운 함수</h3>
+  <div class="cheat-grid reveal">
+    <div class="cheat-item"><code style="color:var(--cyan)">analogWrite(핀, 0~255)</code><span class="desc">PWM 출력 (밝기·속도)</span><span class="cat" style="color:var(--text3)">PWM</span></div>
+    <div class="cheat-item"><code style="color:var(--amber)">map(값, in_min, in_max, out_min, out_max)</code><span class="desc">범위 변환</span><span class="cat" style="color:var(--text3)">변환</span></div>
+    <div class="cheat-item"><code style="color:var(--blue)">constrain(값, min, max)</code><span class="desc">값을 범위 내로 제한</span><span class="cat" style="color:var(--text3)">제한</span></div>
+    <div class="cheat-item"><code style="color:var(--purple)">myServo.attach(핀)</code><span class="desc">서보모터 핀 연결</span><span class="cat" style="color:var(--text3)">서보</span></div>
+    <div class="cheat-item"><code style="color:var(--cyan)">myServo.write(0~180)</code><span class="desc">서보 각도 지정</span><span class="cat" style="color:var(--text3)">서보</span></div>
+    <div class="cheat-item"><code style="color:var(--red)">tone(핀, 주파수, 시간)</code><span class="desc">부저 소리 출력</span><span class="cat" style="color:var(--text3)">부저</span></div>
+    <div class="cheat-item"><code style="color:var(--amber)">noTone(핀)</code><span class="desc">부저 소리 정지</span><span class="cat" style="color:var(--text3)">부저</span></div>
+  </div>
+  <h3 class="reveal" style="font-size:16px;margin:40px 0 16px;font-weight:700">🔧 사용한 부품</h3>
+  <div class="card-grid reveal">
+    <div class="card"><div class="card-icon" style="background:rgba(245,158,11,0.12)">⚙️</div><h3>서보모터 (SG90)</h3><p>0~180° 각도 제어. 3핀(전원·GND·신호). Servo 라이브러리 사용.</p><span class="tag" style="background:rgba(245,158,11,0.1);color:var(--amber)">PWM 핀 · Servo.h</span></div>
+    <div class="card"><div class="card-icon" style="background:rgba(239,68,68,0.12)">🔄</div><h3>DC모터 + L298N</h3><p>연속 회전. 속도(PWM)와 방향(IN1/IN2) 제어. 외부 전원 필요.</p><span class="tag" style="background:rgba(239,68,68,0.1);color:var(--red)">모터 드라이버 필수</span></div>
+    <div class="card"><div class="card-icon" style="background:rgba(167,139,250,0.12)">🔊</div><h3>피에조 부저</h3><p>주파수로 음높이 제어. tone() 함수로 멜로디 연주 가능.</p><span class="tag" style="background:rgba(167,139,250,0.1);color:var(--purple)">tone · noTone</span></div>
+  </div>
+</div></section>
+
+<footer><div class="container">
+  <div class="next">🎓 센서(입력) → 처리(if/map) → 액추에이터(출력)</div>
+  <p>1주차 센서 + 2주차 모터 = 완성된 시스템!</p>
+  <p style="margin-top:16px">수고하셨습니다! 질문 있으면 편하게 물어보세요 🙌</p>
+</div></footer>
+
+<script>
+const obs=new IntersectionObserver(e=>{e.forEach(e=>{e.isIntersecting&&e.target.classList.add('visible')})},{threshold:.1});document.querySelectorAll('.reveal').forEach(e=>obs.observe(e));const sections=document.querySelectorAll('section[id]'),navLinks=document.querySelectorAll('.nav-links a');window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{scrollY>=s.offsetTop-120&&(c=s.id)});navLinks.forEach(a=>{a.classList.remove('active');a.getAttribute('href')==='#'+c&&a.classList.add('active')})});
+</script>
+</body>
+</html>

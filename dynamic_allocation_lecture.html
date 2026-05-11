@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C언어 동적 메모리 할당 — 수업자료</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Fira+Code:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#faf8f4;--surface:#fff;--surface2:#f3f0ea;--surface3:#ebe7df;
+  --ink:#1a1612;--ink2:#4a4540;--ink3:#8a8378;--ink4:#b8b0a4;
+  --accent:#c44b25;--accent2:#e05a30;--accent-light:#fef0eb;
+  --blue:#2563eb;--blue-light:#eff4ff;
+  --green:#0d7c5f;--green-light:#edfaf5;
+  --purple:#7c3aed;--purple-light:#f3eeff;
+  --orange:#d97706;--orange-light:#fef9ee;
+  --red:#dc2626;--red-light:#fef2f2;
+  --code-bg:#1e1b18;--code-text:#e8e0d6;
+  --radius:6px;
+  --shadow:0 1px 3px rgba(26,22,18,.06),0 4px 12px rgba(26,22,18,.04);
+  --shadow2:0 2px 8px rgba(26,22,18,.08),0 8px 24px rgba(26,22,18,.06);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink);line-height:1.85;font-size:15.5px}
+
+/* ── NAV ── */
+.toc-bar{
+  position:sticky;top:0;z-index:100;background:rgba(250,248,244,.92);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--surface3);
+  padding:0 20px;
+}
+.toc-inner{
+  max-width:860px;margin:0 auto;display:flex;align-items:center;gap:8px;
+  overflow-x:auto;padding:10px 0;scrollbar-width:none;
+}
+.toc-inner::-webkit-scrollbar{display:none}
+.toc-chip{
+  padding:5px 14px;border-radius:20px;font-size:.72rem;font-weight:500;
+  white-space:nowrap;cursor:pointer;border:1px solid var(--surface3);
+  color:var(--ink3);background:var(--surface);transition:all .2s;
+  text-decoration:none;
+}
+.toc-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+
+/* ── HERO ── */
+.hero{
+  max-width:860px;margin:0 auto;padding:64px 24px 48px;
+}
+.hero-label{
+  display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-light);padding:4px 14px;border-radius:20px;
+  margin-bottom:16px;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,3.2rem);font-weight:900;
+  color:var(--ink);letter-spacing:-1px;line-height:1.2;
+}
+.hero h1 span{color:var(--accent)}
+.hero-sub{font-size:1rem;color:var(--ink3);margin-top:12px;max-width:560px;line-height:1.8}
+.hero-meta{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+.hero-meta span{
+  font-size:.75rem;color:var(--ink3);padding:4px 12px;border:1px solid var(--surface3);
+  border-radius:16px;background:var(--surface);
+}
+
+/* ── MAIN CONTAINER ── */
+.main{max-width:860px;margin:0 auto;padding:0 24px 80px}
+
+/* ── SECTION ── */
+.section{margin-top:56px}
+.section-num{
+  font-family:'Fira Code',monospace;font-size:.72rem;font-weight:600;color:var(--accent);
+  letter-spacing:1px;margin-bottom:4px;
+}
+.section h2{
+  font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;
+  color:var(--ink);letter-spacing:-.5px;margin-bottom:16px;
+  padding-bottom:12px;border-bottom:2px solid var(--surface3);
+}
+.section p{color:var(--ink2);margin-bottom:14px}
+.section p strong{color:var(--ink);font-weight:700}
+
+/* ── INFO BOXES ── */
+.box{border-radius:var(--radius);padding:18px 22px;margin:18px 0;border-left:3px solid}
+.box-blue{background:var(--blue-light);border-color:var(--blue)}
+.box-blue .box-title{color:var(--blue)}
+.box-green{background:var(--green-light);border-color:var(--green)}
+.box-green .box-title{color:var(--green)}
+.box-orange{background:var(--orange-light);border-color:var(--orange)}
+.box-orange .box-title{color:var(--orange)}
+.box-red{background:var(--red-light);border-color:var(--red)}
+.box-red .box-title{color:var(--red)}
+.box-purple{background:var(--purple-light);border-color:var(--purple)}
+.box-purple .box-title{color:var(--purple)}
+.box-title{font-size:.78rem;font-weight:700;margin-bottom:6px;letter-spacing:.5px}
+.box p{margin-bottom:6px;font-size:.9rem;color:var(--ink2)}
+
+/* ── CODE BLOCK ── */
+.code-wrap{
+  margin:18px 0;border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.code-bar{
+  background:#2a2520;padding:6px 14px;display:flex;align-items:center;justify-content:space-between;
+}
+.code-bar .dots{display:flex;gap:5px}
+.code-bar .dots i{width:9px;height:9px;border-radius:50%;display:block}
+.code-bar .dots .r{background:#ff5f56}.code-bar .dots .y{background:#ffbd2e}.code-bar .dots .g{background:#27c93f}
+.code-bar .fname{font-family:'Fira Code',monospace;font-size:.68rem;color:#8a7e72}
+.code-bar .copy-btn{
+  font-size:.68rem;color:#8a7e72;background:none;border:1px solid #3d3630;
+  padding:2px 10px;border-radius:4px;cursor:pointer;font-family:'Fira Code',monospace;
+  transition:all .15s;
+}
+.code-bar .copy-btn:hover{color:#e8e0d6;border-color:#5a5048}
+pre.code{
+  background:var(--code-bg);padding:18px 20px;overflow-x:auto;
+  font-family:'Fira Code',monospace;font-size:.82rem;line-height:1.75;color:var(--code-text);
+  margin:0;
+}
+pre.code .kw{color:#e0976e}
+pre.code .fn{color:#7ec699}
+pre.code .type{color:#e0af68}
+pre.code .str{color:#a9c77d}
+pre.code .cmt{color:#6b6258;font-style:italic}
+pre.code .num{color:#d19a66}
+pre.code .pp{color:#c678dd}
+pre.code .ptr{color:#56b6c2}
+
+/* ── COMPARE TABLE ── */
+.cmp-table{
+  width:100%;border-collapse:separate;border-spacing:0;margin:18px 0;
+  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
+}
+.cmp-table th{
+  background:var(--ink);color:var(--bg);font-size:.78rem;font-weight:600;
+  padding:10px 16px;text-align:left;letter-spacing:.5px;
+}
+.cmp-table td{
+  padding:10px 16px;font-size:.85rem;border-bottom:1px solid var(--surface3);
+  background:var(--surface);color:var(--ink2);
+}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table code{
+  font-family:'Fira Code',monospace;font-size:.78rem;background:var(--surface2);
+  padding:1px 6px;border-radius:3px;color:var(--accent);
+}
+
+/* ── MEMORY DIAGRAM ── */
+.mem-diagram{
+  margin:20px 0;padding:24px;background:var(--surface);border:1px solid var(--surface3);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+}
+.mem-diagram h4{font-size:.78rem;color:var(--ink3);margin-bottom:14px;letter-spacing:.5px;font-weight:600}
+.mem-row{display:flex;align-items:stretch;margin-bottom:2px}
+.mem-label{
+  width:100px;font-family:'Fira Code',monospace;font-size:.72rem;color:var(--ink3);
+  display:flex;align-items:center;justify-content:flex-end;padding-right:10px;flex-shrink:0;
+}
+.mem-cells{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.mem-cell{
+  width:56px;height:40px;display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:.78rem;border:1px solid var(--surface3);
+  border-radius:3px;position:relative;
+}
+.mem-cell.alloc{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.mem-cell.free{background:var(--surface2);color:var(--ink4)}
+.mem-cell.new{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.mem-cell.danger{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.mem-cell small{position:absolute;top:1px;left:3px;font-size:.5rem;color:var(--ink4)}
+.mem-arrow{
+  display:flex;align-items:center;gap:6px;margin:10px 0 4px 100px;
+  font-family:'Fira Code',monospace;font-size:.72rem;color:var(--accent);
+}
+
+/* ── FLOW STEPS ── */
+.flow{margin:20px 0;counter-reset:flow}
+.flow-step{
+  display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--surface3);
+  counter-increment:flow;
+}
+.flow-step:last-child{border-bottom:none}
+.flow-num{
+  width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;
+  flex-shrink:0;margin-top:2px;
+}
+.flow-num::after{content:counter(flow)}
+.flow-content{flex:1}
+.flow-content h4{font-size:.92rem;font-weight:700;color:var(--ink);margin-bottom:4px}
+.flow-content p{font-size:.88rem;color:var(--ink2)}
+.flow-content code{
+  font-family:'Fira Code',monospace;font-size:.8rem;background:var(--surface2);
+  padding:1px 6px;border-radius:3px;color:var(--accent);
+}
+
+/* ── QUIZ ── */
+.quiz{
+  margin:24px 0;padding:22px;background:var(--purple-light);border:1px solid rgba(124,58,237,.15);
+  border-radius:var(--radius);
+}
+.quiz h4{font-size:.82rem;font-weight:700;color:var(--purple);margin-bottom:10px}
+.quiz p{font-size:.88rem;color:var(--ink2);margin-bottom:10px}
+.quiz-options{display:flex;flex-direction:column;gap:6px}
+.quiz-opt{
+  padding:8px 14px;border:1px solid rgba(124,58,237,.15);border-radius:var(--radius);
+  cursor:pointer;font-size:.85rem;color:var(--ink2);background:var(--surface);
+  transition:all .15s;
+}
+.quiz-opt:hover{border-color:var(--purple);color:var(--purple)}
+.quiz-opt.correct{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.quiz-opt.wrong{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.quiz-explain{display:none;margin-top:10px;padding:10px 14px;border-radius:var(--radius);font-size:.84rem;line-height:1.7}
+
+/* ── INTERACTIVE DEMO ── */
+.demo{
+  margin:24px 0;padding:24px;background:var(--surface);border:2px solid var(--surface3);
+  border-radius:var(--radius);box-shadow:var(--shadow2);
+}
+.demo h4{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.demo-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.demo-btn{
+  padding:6px 16px;border-radius:var(--radius);border:1px solid var(--surface3);
+  font-family:'Fira Code',monospace;font-size:.76rem;cursor:pointer;
+  background:var(--surface);color:var(--ink2);transition:all .15s;
+}
+.demo-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.demo-btn:active{transform:scale(.97)}
+.demo-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.demo-output{
+  background:var(--code-bg);border-radius:var(--radius);padding:16px;min-height:100px;
+  font-family:'Fira Code',monospace;font-size:.8rem;color:var(--code-text);line-height:1.7;
+}
+.demo-output .log{margin-bottom:4px}
+.demo-output .ok{color:#7ec699}
+.demo-output .err{color:#e06c75}
+.demo-output .warn{color:#e0af68}
+.demo-output .info{color:#56b6c2}
+
+@media(max-width:600px){
+  .hero h1{font-size:1.8rem}
+  .mem-label{width:70px;font-size:.65rem}
+  .mem-cell{width:44px;height:34px;font-size:.7rem}
+  .mem-arrow{margin-left:70px}
+  .section h2{font-size:1.3rem}
+}
+
+/* ── ANIMATIONS ── */
+.section{opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
+.section.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ── TOC NAV ── -->
+<nav class="toc-bar">
+  <div class="toc-inner">
+    <a class="toc-chip" href="#sec1">왜 동적할당?</a>
+    <a class="toc-chip" href="#sec2">malloc</a>
+    <a class="toc-chip" href="#sec3">calloc</a>
+    <a class="toc-chip" href="#sec4">realloc</a>
+    <a class="toc-chip" href="#sec5">free</a>
+    <a class="toc-chip" href="#sec6">⚠ 주의사항</a>
+    <a class="toc-chip" href="#sec7">실전 예제</a>
+    <a class="toc-chip" href="#sec8">🎮 체험</a>
+    <a class="toc-chip" href="#sec9">✓ 확인문제</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-label">C Programming Lecture</div>
+  <h1>동적 메모리 <span>할당</span></h1>
+  <p class="hero-sub">프로그램 실행 중에 필요한 만큼 메모리를 확보하고, 다 쓰면 반환하는 기술. malloc, calloc, realloc, free의 원리와 사용법을 배웁니다.</p>
+  <div class="hero-meta">
+    <span>📦 &lt;stdlib.h&gt;</span>
+    <span>🧠 Heap 메모리</span>
+    <span>🔗 포인터 필수</span>
+  </div>
+</header>
+
+<div class="main">
+
+<!-- ═══ SECTION 1 ═══ -->
+<div class="section" id="sec1">
+  <div class="section-num">SECTION 01</div>
+  <h2>왜 동적 할당이 필요한가?</h2>
+
+  <p>C에서 일반적인 배열은 <strong>컴파일 시점</strong>에 크기가 결정됩니다. 하지만 실제 프로그램에서는 사용자가 몇 개의 데이터를 입력할지 미리 알 수 없는 경우가 대부분입니다.</p>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">problem.c</span></div>
+    <pre class="code"><span class="cmt">// ❌ 문제 상황: 학생 수를 미리 알 수 없다</span>
+<span class="type">int</span> scores[<span class="num">100</span>];  <span class="cmt">// 100명 고정? 200명이면? 10명이면 메모리 낭비!</span>
+
+<span class="cmt">// ✅ 해결: 동적 할당으로 필요한 만큼만 확보</span>
+<span class="type">int</span> n;
+<span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+<span class="type">int</span> <span class="ptr">*scores</span> = (<span class="type">int</span> *)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) * n);  <span class="cmt">// n명분만 할당!</span></pre>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th></th><th>정적 할당 (Stack)</th><th>동적 할당 (Heap)</th></tr>
+    <tr><td><strong>크기 결정</strong></td><td>컴파일 시점에 고정</td><td>실행 중에 자유롭게 결정</td></tr>
+    <tr><td><strong>메모리 위치</strong></td><td>스택(Stack) 영역</td><td>힙(Heap) 영역</td></tr>
+    <tr><td><strong>해제 방식</strong></td><td>함수 종료 시 자동 해제</td><td><code>free()</code>로 수동 해제</td></tr>
+    <tr><td><strong>크기 변경</strong></td><td>불가능</td><td><code>realloc()</code>으로 가능</td></tr>
+    <tr><td><strong>사용 예</strong></td><td><code>int arr[10];</code></td><td><code>malloc(sizeof(int)*n)</code></td></tr>
+  </table>
+
+  <div class="box box-blue">
+    <div class="box-title">📌 핵심 개념</div>
+    <p>동적 할당 함수들은 모두 <strong>&lt;stdlib.h&gt;</strong> 헤더에 선언되어 있습니다. 반드시 <code>#include &lt;stdlib.h&gt;</code>를 추가하세요.</p>
+  </div>
+</div>
+
+<!-- ═══ SECTION 2: malloc ═══ -->
+<div class="section" id="sec2">
+  <div class="section-num">SECTION 02</div>
+  <h2>malloc() — 메모리 할당</h2>
+
+  <p><strong>malloc</strong>(memory allocation)은 지정한 바이트 수만큼 힙 메모리를 할당하고, 그 시작 주소를 반환합니다.</p>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">문법</span></div>
+    <pre class="code"><span class="type">void</span> *<span class="fn">malloc</span>(<span class="type">size_t</span> size);  <span class="cmt">// size: 할당할 바이트 수</span>
+                                <span class="cmt">// 반환: 할당된 메모리의 시작 주소 (실패 시 NULL)</span></pre>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num"></div>
+      <div class="flow-content">
+        <h4>할당할 크기 계산</h4>
+        <p><code>sizeof(자료형) × 개수</code>로 필요한 바이트 수를 계산합니다.<br>int 5개 = <code>sizeof(int) × 5</code> = 4 × 5 = <strong>20바이트</strong></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num"></div>
+      <div class="flow-content">
+        <h4>malloc 호출 + 형변환</h4>
+        <p>malloc은 <code>void *</code>를 반환하므로 사용할 포인터 타입으로 <strong>캐스팅</strong>합니다.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num"></div>
+      <div class="flow-content">
+        <h4>NULL 체크</h4>
+        <p>메모리 부족 시 <code>NULL</code>을 반환합니다. 반드시 확인 후 사용하세요!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">malloc_example.c</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+    <pre class="code"><span class="pp">#include &lt;stdio.h&gt;</span>
+<span class="pp">#include &lt;stdlib.h&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="type">int</span> n;
+    <span class="fn">printf</span>(<span class="str">"학생 수: "</span>);
+    <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+
+    <span class="cmt">// 1단계: int n개 만큼 메모리 할당</span>
+    <span class="type">int</span> <span class="ptr">*scores</span> = (<span class="type">int</span> *)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) * n);
+
+    <span class="cmt">// 2단계: NULL 체크 (할당 실패 대비)</span>
+    <span class="kw">if</span> (scores == <span class="num">NULL</span>) {
+        <span class="fn">printf</span>(<span class="str">"메모리 할당 실패!\n"</span>);
+        <span class="kw">return</span> <span class="num">1</span>;
+    }
+
+    <span class="cmt">// 3단계: 배열처럼 사용</span>
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="fn">printf</span>(<span class="str">"점수 %d: "</span>, i + <span class="num">1</span>);
+        <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;scores[i]);   <span class="cmt">// *(scores+i) 와 동일</span>
+    }
+
+    <span class="cmt">// 4단계: 사용 후 반드시 해제</span>
+    <span class="fn">free</span>(scores);
+    scores = <span class="num">NULL</span>;  <span class="cmt">// 안전을 위해 NULL로 초기화</span>
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+  </div>
+
+  <div class="mem-diagram">
+    <h4>📦 메모리 구조 시각화 — malloc(sizeof(int) * 5)</h4>
+    <div class="mem-row">
+      <div class="mem-label">scores →</div>
+      <div class="mem-cells">
+        <div class="mem-cell alloc"><small>[0]</small>??</div>
+        <div class="mem-cell alloc"><small>[1]</small>??</div>
+        <div class="mem-cell alloc"><small>[2]</small>??</div>
+        <div class="mem-cell alloc"><small>[3]</small>??</div>
+        <div class="mem-cell alloc"><small>[4]</small>??</div>
+      </div>
+    </div>
+    <div class="mem-arrow">↑ 초기값이 <strong>쓰레기값</strong>임에 주의! (0이 아님)</div>
+  </div>
+
+  <div class="box box-orange">
+    <div class="box-title">⚠ 주의: malloc은 초기화하지 않는다!</div>
+    <p>malloc으로 할당된 메모리에는 <strong>쓰레기값(garbage value)</strong>이 들어있습니다. 사용 전에 직접 초기화하거나, 초기화가 필요하면 <strong>calloc</strong>을 사용하세요.</p>
+  </div>
+</div>
+
+<!-- ═══ SECTION 3: calloc ═══ -->
+<div class="section" id="sec3">
+  <div class="section-num">SECTION 03</div>
+  <h2>calloc() — 0으로 초기화된 할당</h2>
+
+  <p><strong>calloc</strong>(contiguous allocation)은 malloc과 동일하게 메모리를 할당하되, 모든 비트를 <strong>0으로 초기화</strong>해 줍니다.</p>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">문법</span></div>
+    <pre class="code"><span class="type">void</span> *<span class="fn">calloc</span>(<span class="type">size_t</span> count, <span class="type">size_t</span> size);
+<span class="cmt">// count: 요소 개수</span>
+<span class="cmt">// size : 각 요소의 크기(바이트)</span>
+
+<span class="cmt">// 사용 예</span>
+<span class="type">int</span> <span class="ptr">*arr</span> = (<span class="type">int</span> *)<span class="fn">calloc</span>(<span class="num">5</span>, <span class="kw">sizeof</span>(<span class="type">int</span>));  <span class="cmt">// int 5개, 모두 0으로 초기화</span></pre>
+  </div>
+
+  <div class="mem-diagram">
+    <h4>📦 calloc(5, sizeof(int)) 결과</h4>
+    <div class="mem-row">
+      <div class="mem-label">arr →</div>
+      <div class="mem-cells">
+        <div class="mem-cell new"><small>[0]</small>0</div>
+        <div class="mem-cell new"><small>[1]</small>0</div>
+        <div class="mem-cell new"><small>[2]</small>0</div>
+        <div class="mem-cell new"><small>[3]</small>0</div>
+        <div class="mem-cell new"><small>[4]</small>0</div>
+      </div>
+    </div>
+    <div class="mem-arrow">↑ 모두 <strong>0으로 초기화</strong>됨 ✓</div>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th>비교</th><th>malloc</th><th>calloc</th></tr>
+    <tr><td><strong>인자</strong></td><td><code>malloc(바이트수)</code></td><td><code>calloc(개수, 크기)</code></td></tr>
+    <tr><td><strong>초기화</strong></td><td>안 함 (쓰레기값)</td><td>0으로 초기화</td></tr>
+    <tr><td><strong>속도</strong></td><td>약간 빠름</td><td>약간 느림 (초기화 때문)</td></tr>
+    <tr><td><strong>용도</strong></td><td>직접 초기화할 때</td><td>0 초기화가 필요할 때</td></tr>
+  </table>
+</div>
+
+<!-- ═══ SECTION 4: realloc ═══ -->
+<div class="section" id="sec4">
+  <div class="section-num">SECTION 04</div>
+  <h2>realloc() — 크기 변경</h2>
+
+  <p><strong>realloc</strong>(re-allocation)은 이미 할당된 메모리의 <strong>크기를 늘리거나 줄입니다</strong>. 기존 데이터는 유지됩니다.</p>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">문법</span></div>
+    <pre class="code"><span class="type">void</span> *<span class="fn">realloc</span>(<span class="type">void</span> <span class="ptr">*ptr</span>, <span class="type">size_t</span> new_size);
+<span class="cmt">// ptr     : 기존에 할당받은 포인터</span>
+<span class="cmt">// new_size: 새로 원하는 바이트 수</span>
+<span class="cmt">// 반환    : 새 메모리 주소 (기존과 다를 수 있음!)</span></pre>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">realloc_example.c</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+    <pre class="code"><span class="type">int</span> <span class="ptr">*arr</span> = (<span class="type">int</span> *)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) * <span class="num">3</span>);
+arr[<span class="num">0</span>] = <span class="num">10</span>;  arr[<span class="num">1</span>] = <span class="num">20</span>;  arr[<span class="num">2</span>] = <span class="num">30</span>;
+
+<span class="cmt">// 3개 → 5개로 확장</span>
+<span class="type">int</span> <span class="ptr">*temp</span> = (<span class="type">int</span> *)<span class="fn">realloc</span>(arr, <span class="kw">sizeof</span>(<span class="type">int</span>) * <span class="num">5</span>);
+
+<span class="kw">if</span> (temp != <span class="num">NULL</span>) {
+    arr = temp;          <span class="cmt">// 새 주소로 업데이트</span>
+    arr[<span class="num">3</span>] = <span class="num">40</span>;         <span class="cmt">// 새로 확장된 공간 사용</span>
+    arr[<span class="num">4</span>] = <span class="num">50</span>;
+}
+
+<span class="fn">free</span>(arr);</pre>
+  </div>
+
+  <div class="mem-diagram">
+    <h4>📦 realloc 동작 과정</h4>
+    <div class="mem-row" style="margin-bottom:8px">
+      <div class="mem-label">Before:</div>
+      <div class="mem-cells">
+        <div class="mem-cell alloc"><small>[0]</small>10</div>
+        <div class="mem-cell alloc"><small>[1]</small>20</div>
+        <div class="mem-cell alloc"><small>[2]</small>30</div>
+      </div>
+    </div>
+    <div class="mem-arrow" style="margin-left:100px;margin-bottom:8px">↓ realloc(arr, sizeof(int) * 5)</div>
+    <div class="mem-row">
+      <div class="mem-label">After:</div>
+      <div class="mem-cells">
+        <div class="mem-cell alloc"><small>[0]</small>10</div>
+        <div class="mem-cell alloc"><small>[1]</small>20</div>
+        <div class="mem-cell alloc"><small>[2]</small>30</div>
+        <div class="mem-cell new"><small>[3]</small>??</div>
+        <div class="mem-cell new"><small>[4]</small>??</div>
+      </div>
+    </div>
+    <div class="mem-arrow">↑ 기존 데이터는 유지, 새 공간은 <strong>초기화 안 됨</strong></div>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">🚨 절대 주의: realloc 반환값을 임시 변수로 받자!</div>
+    <p>만약 <code>arr = realloc(arr, ...)</code>처럼 직접 덮어쓰면, realloc이 실패(NULL 반환)했을 때 <strong>기존 메모리 주소를 잃어버려서</strong> 메모리 누수가 발생합니다. 반드시 temp 변수로 먼저 받으세요!</p>
+  </div>
+</div>
+
+<!-- ═══ SECTION 5: free ═══ -->
+<div class="section" id="sec5">
+  <div class="section-num">SECTION 05</div>
+  <h2>free() — 메모리 해제</h2>
+
+  <p>동적으로 할당한 메모리는 <strong>자동으로 해제되지 않습니다</strong>. 반드시 <code>free()</code>로 반환해야 합니다.</p>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">free 사용 패턴</span></div>
+    <pre class="code"><span class="type">int</span> <span class="ptr">*p</span> = (<span class="type">int</span> *)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) * <span class="num">10</span>);
+
+<span class="cmt">// ... p를 사용한 작업 수행 ...</span>
+
+<span class="fn">free</span>(p);       <span class="cmt">// 메모리 해제</span>
+p = <span class="num">NULL</span>;      <span class="cmt">// ★ 댕글링 포인터 방지</span></pre>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num"></div>
+      <div class="flow-content">
+        <h4>free(ptr) 호출</h4>
+        <p>ptr이 가리키는 힙 메모리 블록을 운영체제에 반환합니다.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num"></div>
+      <div class="flow-content">
+        <h4>ptr = NULL 설정</h4>
+        <p>해제된 메모리를 가리키는 포인터를 <strong>댕글링 포인터(dangling pointer)</strong>라 합니다. NULL로 초기화하여 실수로 접근하는 것을 방지합니다.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 6: 주의사항 ═══ -->
+<div class="section" id="sec6">
+  <div class="section-num">SECTION 06</div>
+  <h2>⚠ 자주 하는 실수 & 주의사항</h2>
+
+  <div class="box box-red">
+    <div class="box-title">실수 1: 메모리 누수 (Memory Leak)</div>
+    <p>할당만 하고 free하지 않으면 프로그램이 끝날 때까지 메모리를 잡아먹습니다.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">❌ memory_leak.c</span></div>
+    <pre class="code"><span class="kw">void</span> <span class="fn">badFunction</span>() {
+    <span class="type">int</span> <span class="ptr">*p</span> = (<span class="type">int</span> *)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) * <span class="num">100</span>);
+    <span class="cmt">// ... 작업 수행 ...</span>
+    <span class="kw">return</span>;  <span class="cmt">// ❌ free 없이 함수 종료! → 메모리 누수</span>
+}</pre>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">실수 2: 이중 해제 (Double Free)</div>
+    <p>같은 메모리를 두 번 free하면 <strong>정의되지 않은 동작(Undefined Behavior)</strong>이 발생합니다.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">❌ double_free.c</span></div>
+    <pre class="code"><span class="type">int</span> <span class="ptr">*p</span> = (<span class="type">int</span> *)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>));
+<span class="fn">free</span>(p);
+<span class="fn">free</span>(p);  <span class="cmt">// ❌ 이미 해제된 메모리를 다시 해제! → 크래시 위험</span>
+
+<span class="cmt">// ✅ 해결: free 후 NULL로 설정하면 free(NULL)은 안전</span>
+<span class="fn">free</span>(p);
+p = <span class="num">NULL</span>;
+<span class="fn">free</span>(p);  <span class="cmt">// ✅ free(NULL)은 아무 동작도 안 함</span></pre>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">실수 3: 해제 후 접근 (Use After Free)</div>
+    <p>free한 메모리에 값을 쓰거나 읽으면 프로그램이 비정상적으로 동작합니다.</p>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">실수 4: NULL 체크 생략</div>
+    <p>malloc/calloc/realloc이 NULL을 반환할 수 있음을 잊지 마세요. NULL인 포인터를 역참조하면 <strong>세그멘테이션 폴트</strong>가 발생합니다.</p>
+  </div>
+
+  <div class="box box-green">
+    <div class="box-title">✅ 안전한 동적 할당 체크리스트</div>
+    <p>□ <code>#include &lt;stdlib.h&gt;</code> 했는가?</p>
+    <p>□ 반환값이 <code>NULL</code>인지 확인했는가?</p>
+    <p>□ 사용이 끝나면 <code>free()</code>를 호출했는가?</p>
+    <p>□ free 후 포인터를 <code>NULL</code>로 설정했는가?</p>
+    <p>□ realloc은 임시 변수로 받았는가?</p>
+  </div>
+</div>
+
+<!-- ═══ SECTION 7: 실전 예제 ═══ -->
+<div class="section" id="sec7">
+  <div class="section-num">SECTION 07</div>
+  <h2>실전 예제: 동적 배열로 성적 관리</h2>
+
+  <p>학생 수를 입력받아 동적 배열로 성적을 저장하고, 평균을 계산하는 완전한 프로그램입니다.</p>
+
+  <div class="code-wrap">
+    <div class="code-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="fname">grade_manager.c</span><button class="copy-btn" onclick="copyCode(this)">복사</button></div>
+    <pre class="code"><span class="pp">#include &lt;stdio.h&gt;</span>
+<span class="pp">#include &lt;stdlib.h&gt;</span>
+
+<span class="type">double</span> <span class="fn">calcAverage</span>(<span class="type">int</span> <span class="ptr">*arr</span>, <span class="type">int</span> size) {
+    <span class="type">int</span> sum = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; size; i++)
+        sum += arr[i];
+    <span class="kw">return</span> (<span class="type">double</span>)sum / size;
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="type">int</span> n;
+    <span class="fn">printf</span>(<span class="str">"학생 수 입력: "</span>);
+    <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+
+    <span class="cmt">// 동적 할당</span>
+    <span class="type">int</span> <span class="ptr">*scores</span> = (<span class="type">int</span> *)<span class="fn">malloc</span>(<span class="kw">sizeof</span>(<span class="type">int</span>) * n);
+    <span class="kw">if</span> (scores == <span class="num">NULL</span>) {
+        <span class="fn">printf</span>(<span class="str">"메모리 할당 실패\n"</span>);
+        <span class="kw">return</span> <span class="num">1</span>;
+    }
+
+    <span class="cmt">// 입력</span>
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="fn">printf</span>(<span class="str">"학생 %d 점수: "</span>, i + <span class="num">1</span>);
+        <span class="fn">scanf</span>(<span class="str">"%d"</span>, &amp;scores[i]);
+    }
+
+    <span class="cmt">// 평균 계산 (함수에 동적 배열 전달)</span>
+    <span class="type">double</span> avg = <span class="fn">calcAverage</span>(scores, n);
+    <span class="fn">printf</span>(<span class="str">"평균: %.1f\n"</span>, avg);
+
+    <span class="cmt">// 추가 학생이 생겼다면? → realloc</span>
+    <span class="type">int</span> extra = <span class="num">2</span>;
+    <span class="type">int</span> <span class="ptr">*temp</span> = (<span class="type">int</span> *)<span class="fn">realloc</span>(scores, <span class="kw">sizeof</span>(<span class="type">int</span>) * (n + extra));
+    <span class="kw">if</span> (temp != <span class="num">NULL</span>) {
+        scores = temp;
+        scores[n] = <span class="num">95</span>;
+        scores[n + <span class="num">1</span>] = <span class="num">88</span>;
+        n += extra;
+        <span class="fn">printf</span>(<span class="str">"확장 후 평균: %.1f\n"</span>, <span class="fn">calcAverage</span>(scores, n));
+    }
+
+    <span class="cmt">// 해제</span>
+    <span class="fn">free</span>(scores);
+    scores = <span class="num">NULL</span>;
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+  </div>
+</div>
+
+<!-- ═══ SECTION 8: INTERACTIVE DEMO ═══ -->
+<div class="section" id="sec8">
+  <div class="section-num">SECTION 08</div>
+  <h2>🎮 인터랙티브 체험: 메모리 시뮬레이터</h2>
+
+  <p>버튼을 눌러 동적 할당의 동작 과정을 직접 체험해 보세요.</p>
+
+  <div class="demo">
+    <h4>🖥 Heap Memory Simulator</h4>
+    <div class="demo-controls">
+      <button class="demo-btn" onclick="simAction('malloc')">malloc(3)</button>
+      <button class="demo-btn" onclick="simAction('assign')">값 대입</button>
+      <button class="demo-btn" onclick="simAction('realloc')">realloc(5)</button>
+      <button class="demo-btn" onclick="simAction('free')">free()</button>
+      <button class="demo-btn" onclick="simAction('reset')" style="color:var(--red);border-color:var(--red)">초기화</button>
+    </div>
+    <div class="demo-output" id="simOutput">
+      <div class="log info">[ 시뮬레이터 준비 완료 ]</div>
+      <div class="log">버튼을 순서대로 눌러보세요: malloc → 값 대입 → realloc → free</div>
+    </div>
+    <div id="simMemory" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 9: QUIZ ═══ -->
+<div class="section" id="sec9">
+  <div class="section-num">SECTION 09</div>
+  <h2>✓ 이해도 확인 문제</h2>
+
+  <div class="quiz" id="q1">
+    <h4>Q1. malloc(20)은 몇 개의 int를 저장할 수 있는가? (sizeof(int) = 4)</h4>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz('q1',this,false)">① 20개</div>
+      <div class="quiz-opt" onclick="checkQuiz('q1',this,true)">② 5개</div>
+      <div class="quiz-opt" onclick="checkQuiz('q1',this,false)">③ 4개</div>
+      <div class="quiz-opt" onclick="checkQuiz('q1',this,false)">④ 80개</div>
+    </div>
+    <div class="quiz-explain" id="q1-explain" style="background:var(--green-light);color:var(--green)">
+      ✅ 정답! malloc(20)은 20바이트를 할당합니다. int가 4바이트이므로 20 ÷ 4 = <strong>5개</strong>를 저장할 수 있습니다.
+    </div>
+  </div>
+
+  <div class="quiz" id="q2">
+    <h4>Q2. 다음 중 malloc과 calloc의 차이로 올바른 것은?</h4>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz('q2',this,false)">① calloc이 더 많은 메모리를 할당한다</div>
+      <div class="quiz-opt" onclick="checkQuiz('q2',this,true)">② calloc은 메모리를 0으로 초기화한다</div>
+      <div class="quiz-opt" onclick="checkQuiz('q2',this,false)">③ malloc은 스택에, calloc은 힙에 할당한다</div>
+      <div class="quiz-opt" onclick="checkQuiz('q2',this,false)">④ calloc은 free하지 않아도 된다</div>
+    </div>
+    <div class="quiz-explain" id="q2-explain" style="background:var(--green-light);color:var(--green)">
+      ✅ 정답! malloc은 쓰레기값이 남아있지만, calloc은 할당된 메모리를 <strong>모두 0으로 초기화</strong>합니다. 둘 다 힙에 할당하며, 둘 다 반드시 free해야 합니다.
+    </div>
+  </div>
+
+  <div class="quiz" id="q3">
+    <h4>Q3. 아래 코드의 문제점은?</h4>
+    <p style="font-family:'Fira Code',monospace;font-size:.84rem;background:var(--surface2);padding:10px 14px;border-radius:4px;color:var(--ink)">
+      int *p = (int *)malloc(sizeof(int) * 10);<br>
+      p = (int *)malloc(sizeof(int) * 20);  // 크기 변경<br>
+      free(p);
+    </p>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz('q3',this,false)">① 아무 문제 없다</div>
+      <div class="quiz-opt" onclick="checkQuiz('q3',this,false)">② free를 두 번 호출해야 한다</div>
+      <div class="quiz-opt" onclick="checkQuiz('q3',this,true)">③ 처음 할당한 10개 공간이 메모리 누수된다</div>
+      <div class="quiz-opt" onclick="checkQuiz('q3',this,false)">④ realloc을 써야 하므로 컴파일 오류이다</div>
+    </div>
+    <div class="quiz-explain" id="q3-explain" style="background:var(--green-light);color:var(--green)">
+      ✅ 정답! 두 번째 malloc으로 p가 새 주소를 가리키면서, 처음 malloc으로 받은 10개짜리 메모리의 주소를 <strong>잃어버립니다</strong>. free할 수 없으므로 메모리 누수! 크기를 변경하려면 <strong>realloc</strong>을 사용해야 합니다.
+    </div>
+  </div>
+
+  <div class="quiz" id="q4">
+    <h4>Q4. realloc 사용 시 반환값을 임시 변수로 받아야 하는 이유는?</h4>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz('q4',this,false)">① 속도가 더 빨라서</div>
+      <div class="quiz-opt" onclick="checkQuiz('q4',this,false)">② 컴파일러가 요구해서</div>
+      <div class="quiz-opt" onclick="checkQuiz('q4',this,true)">③ 실패 시 NULL이 반환되어 기존 메모리 주소를 잃을 수 있어서</div>
+      <div class="quiz-opt" onclick="checkQuiz('q4',this,false)">④ realloc은 항상 새 주소를 반환해서</div>
+    </div>
+    <div class="quiz-explain" id="q4-explain" style="background:var(--green-light);color:var(--green)">
+      ✅ 정답! <code>arr = realloc(arr, ...)</code>에서 realloc이 실패하면 NULL이 arr에 대입되어 <strong>기존 메모리의 주소를 잃어버립니다</strong>. 그러면 기존 메모리를 free할 수 없어 누수가 발생합니다.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="section" id="summary">
+  <div class="section-num">SUMMARY</div>
+  <h2>📋 한눈에 정리</h2>
+
+  <table class="cmp-table">
+    <tr><th>함수</th><th>기능</th><th>헤더</th><th>반환값</th></tr>
+    <tr><td><code>malloc(size)</code></td><td>size 바이트 할당</td><td>&lt;stdlib.h&gt;</td><td>void * (실패 시 NULL)</td></tr>
+    <tr><td><code>calloc(n, size)</code></td><td>n × size 바이트 할당 + 0 초기화</td><td>&lt;stdlib.h&gt;</td><td>void * (실패 시 NULL)</td></tr>
+    <tr><td><code>realloc(ptr, size)</code></td><td>기존 메모리 크기 변경</td><td>&lt;stdlib.h&gt;</td><td>void * (실패 시 NULL)</td></tr>
+    <tr><td><code>free(ptr)</code></td><td>할당된 메모리 해제</td><td>&lt;stdlib.h&gt;</td><td>없음 (void)</td></tr>
+  </table>
+
+  <div class="box box-green" style="margin-top:20px">
+    <div class="box-title">🎯 동적 할당 핵심 공식</div>
+    <p style="font-family:'Fira Code',monospace;font-size:.9rem;color:var(--ink);text-align:center;padding:8px 0">
+      할당 → NULL 체크 → 사용 → free → NULL 대입
+    </p>
+  </div>
+</div>
+
+</div>
+
+<footer style="text-align:center;padding:36px 20px;color:var(--ink4);font-size:.72rem;border-top:1px solid var(--surface3)">
+  C언어 동적 메모리 할당 수업자료
+</footer>
+
+<script>
+// ── Copy code button ──
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre.code');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '복사', 1200);
+  });
+}
+
+// ── Quiz ──
+function checkQuiz(qid, el, correct) {
+  const q = document.getElementById(qid);
+  if (q.dataset.answered) return;
+  q.dataset.answered = 'true';
+
+  if (correct) {
+    el.classList.add('correct');
+    document.getElementById(qid + '-explain').style.display = 'block';
+  } else {
+    el.classList.add('wrong');
+    const opts = q.querySelectorAll('.quiz-opt');
+    opts.forEach(o => { if (!o.classList.contains('wrong')) o.style.opacity = '.5'; });
+    const explain = document.getElementById(qid + '-explain');
+    explain.style.background = 'var(--red-light)';
+    explain.style.color = 'var(--red)';
+    explain.textContent = '❌ 오답! 다시 한번 위 내용을 복습해 보세요.';
+    explain.style.display = 'block';
+  }
+}
+
+// ── Memory Simulator ──
+let simState = 'init';
+function simAction(action) {
+  const out = document.getElementById('simOutput');
+  const mem = document.getElementById('simMemory');
+
+  function log(cls, text) {
+    out.innerHTML += `<div class="log ${cls}">${text}</div>`;
+    out.scrollTop = out.scrollHeight;
+  }
+
+  function renderMem(cells) {
+    let html = '<div style="display:flex;gap:3px;flex-wrap:wrap;">';
+    cells.forEach((c, i) => {
+      html += `<div class="mem-cell ${c.cls}"><small>[${i}]</small>${c.val}</div>`;
+    });
+    html += '</div>';
+    mem.innerHTML = html;
+  }
+
+  if (action === 'reset') {
+    simState = 'init';
+    out.innerHTML = '<div class="log info">[ 시뮬레이터 초기화 ]</div><div class="log">버튼을 순서대로 눌러보세요: malloc → 값 대입 → realloc → free</div>';
+    mem.innerHTML = '';
+    return;
+  }
+
+  if (action === 'malloc') {
+    if (simState !== 'init') { log('warn', '⚠ 이미 할당된 상태입니다. 초기화 후 다시 시도하세요.'); return; }
+    log('ok', '>>> int *arr = (int *)malloc(sizeof(int) * 3);');
+    log('info', '✓ 힙에서 12바이트(int 3개) 할당 완료');
+    log('warn', '주의: 초기값은 쓰레기값(garbage)입니다!');
+    renderMem([
+      {val:'??', cls:'alloc'}, {val:'??', cls:'alloc'}, {val:'??', cls:'alloc'}
+    ]);
+    simState = 'malloced';
+  }
+  else if (action === 'assign') {
+    if (simState !== 'malloced') { log('warn', '⚠ 먼저 malloc을 실행하세요.'); return; }
+    log('ok', '>>> arr[0]=10; arr[1]=20; arr[2]=30;');
+    log('info', '✓ 배열에 값 대입 완료');
+    renderMem([
+      {val:'10', cls:'alloc'}, {val:'20', cls:'alloc'}, {val:'30', cls:'alloc'}
+    ]);
+    simState = 'assigned';
+  }
+  else if (action === 'realloc') {
+    if (simState !== 'assigned') { log('warn', '⚠ 먼저 값을 대입하세요.'); return; }
+    log('ok', '>>> arr = (int *)realloc(arr, sizeof(int) * 5);');
+    log('info', '✓ 메모리를 3칸 → 5칸으로 확장 (기존 데이터 유지)');
+    log('warn', '새로 확장된 [3], [4]는 초기화되지 않음!');
+    renderMem([
+      {val:'10', cls:'alloc'}, {val:'20', cls:'alloc'}, {val:'30', cls:'alloc'},
+      {val:'??', cls:'new'}, {val:'??', cls:'new'}
+    ]);
+    simState = 'realloced';
+  }
+  else if (action === 'free') {
+    if (simState === 'init') { log('warn', '⚠ 해제할 메모리가 없습니다.'); return; }
+    if (simState === 'freed') { log('err', '❌ 이중 해제(Double Free)! 이미 해제된 메모리입니다.'); return; }
+    log('ok', '>>> free(arr); arr = NULL;');
+    log('info', '✓ 메모리 해제 완료. 포인터를 NULL로 설정.');
+    const count = simState === 'realloced' ? 5 : 3;
+    const cells = [];
+    for (let i = 0; i < count; i++) cells.push({val:'—', cls:'free'});
+    renderMem(cells);
+    simState = 'freed';
+  }
+}
+
+// ── Scroll reveal ──
+const sections = document.querySelectorAll('.section');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

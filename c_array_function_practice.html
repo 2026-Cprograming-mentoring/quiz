@@ -4,209 +4,226 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>C언어 배열 & 함수 연습문제</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0a0c10;--surface:#11141c;--surface2:#171c28;--surface3:#1e2435;
-  --border:#252c3f;--border2:#303a52;
-  --text:#dfe2ea;--text2:#8890a6;--text3:#555d76;
-  --accent:#5b8def;--accent2:#7aa2f7;--accent-dim:rgba(91,141,239,.1);--accent-glow:rgba(91,141,239,.18);
-  --green:#73daca;--green-dim:rgba(115,218,202,.08);--green-glow:rgba(115,218,202,.18);
-  --orange:#e0af68;--orange-dim:rgba(224,175,104,.08);--orange-glow:rgba(224,175,104,.18);
-  --red:#f7768e;--red-dim:rgba(247,118,142,.08);--red-glow:rgba(247,118,142,.18);
-  --cyan:#7dcfff;
-  --radius:8px;
+  --bg:#0c0e14;--surface:#141720;--surface2:#1a1e2a;--surface3:#222738;
+  --border:#2a2f42;--text:#e2e4eb;--text2:#8b90a5;--text3:#5a5f75;
+  --accent:#6c5ce7;--accent2:#a29bfe;--accent-glow:rgba(108,92,231,.15);
+  --green:#00cec9;--green-glow:rgba(0,206,201,.12);
+  --orange:#fdcb6e;--orange-glow:rgba(253,203,110,.1);
+  --red:#ff6b6b;--red-glow:rgba(255,107,107,.1);
+  --blue:#74b9ff;
+  --radius:10px;
 }
-html{scroll-behavior:smooth}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
-
+body{
+  font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;line-height:1.7;
+}
 .hero{
-  padding:56px 20px 36px;text-align:center;position:relative;overflow:hidden;
+  padding:60px 20px 40px;text-align:center;
+  background:linear-gradient(180deg,rgba(108,92,231,.08) 0%,transparent 100%);
   border-bottom:1px solid var(--border);
 }
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(91,141,239,.07),transparent 70%);
-}
 .hero h1{
-  font-family:'Outfit',sans-serif;font-size:2.4rem;font-weight:800;letter-spacing:-1.5px;
+  font-size:2.2rem;font-weight:800;letter-spacing:-1px;
   background:linear-gradient(135deg,var(--accent2),var(--green));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;position:relative;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.hero p{font-size:.9rem;color:var(--text2);margin-top:8px;position:relative}
-.pills{display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap;position:relative}
-.pill{padding:3px 12px;border-radius:20px;font-size:.7rem;font-weight:600;border:1px solid var(--border);color:var(--text3);background:var(--surface)}
-.pill.g{border-color:rgba(115,218,202,.3);color:var(--green);background:var(--green-dim)}
-.pill.o{border-color:rgba(224,175,104,.3);color:var(--orange);background:var(--orange-dim)}
+.hero p{font-size:.95rem;color:var(--text2);margin-top:8px}
+.tags{display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.tag{
+  padding:4px 14px;border-radius:20px;font-size:.75rem;font-weight:600;
+  border:1px solid var(--border);color:var(--text2);background:var(--surface);
+}
+.tag.mid{border-color:var(--green);color:var(--green);background:var(--green-glow)}
+.tag.midh{border-color:var(--orange);color:var(--orange);background:var(--orange-glow)}
 
-.container{max-width:920px;margin:0 auto;padding:20px 16px 80px}
+.container{max-width:900px;margin:0 auto;padding:24px 20px 80px}
 
-.progress-strip{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 0}
-.progress-inner{max-width:920px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:12px}
-.progress-dots{display:flex;gap:8px}
-.pdot{width:32px;height:6px;border-radius:3px;background:var(--surface2);border:1px solid var(--border);transition:all .4s}
-.pdot.pass{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(115,218,202,.3)}
-.pdot.fail{background:var(--red);border-color:var(--red)}
-.progress-label{font-size:.72rem;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.problem{
+  margin-top:36px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface);overflow:hidden;
+  transition:border-color .3s;
+}
+.problem:hover{border-color:var(--accent)}
+.problem-header{
+  padding:20px 24px;display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid var(--border);cursor:pointer;
+  background:linear-gradient(135deg,var(--surface2),var(--surface));
+}
+.problem-num{
+  width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.9rem;flex-shrink:0;
+}
+.problem-num.mid{background:var(--green-glow);color:var(--green);border:1.5px solid rgba(0,206,201,.3)}
+.problem-num.midh{background:var(--orange-glow);color:var(--orange);border:1.5px solid rgba(253,203,110,.3)}
+.problem-title{font-weight:600;font-size:1.05rem;flex:1}
+.diff-badge{
+  padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:600;flex-shrink:0;
+}
+.diff-badge.mid{background:var(--green-glow);color:var(--green);border:1px solid rgba(0,206,201,.25)}
+.diff-badge.midh{background:var(--orange-glow);color:var(--orange);border:1px solid rgba(253,203,110,.25)}
 
-.problem{margin-top:28px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden;transition:border-color .3s,box-shadow .3s}
-.problem:hover{border-color:var(--border2)}
-.problem.pass-border{border-color:rgba(115,218,202,.35);box-shadow:0 0 20px rgba(115,218,202,.06)}
-.problem.fail-border{border-color:rgba(247,118,142,.3)}
-
-.p-head{padding:18px 22px;display:flex;align-items:center;gap:12px;background:var(--surface2);border-bottom:1px solid var(--border)}
-.p-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.82rem;flex-shrink:0}
-.p-num.g{background:var(--green-dim);color:var(--green);border:1.5px solid rgba(115,218,202,.25)}
-.p-num.o{background:var(--orange-dim);color:var(--orange);border:1.5px solid rgba(224,175,104,.25)}
-.p-title{font-family:'Outfit',sans-serif;font-weight:600;font-size:1.02rem;flex:1}
-.diff{padding:3px 10px;border-radius:10px;font-size:.68rem;font-weight:600;flex-shrink:0}
-.diff.g{background:var(--green-dim);color:var(--green);border:1px solid rgba(115,218,202,.2)}
-.diff.o{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(224,175,104,.2)}
-.p-status{font-size:1.1rem;flex-shrink:0;opacity:0;transition:opacity .3s}
-.p-status.show{opacity:1}
-
-.p-body{padding:22px}
-.desc{color:var(--text2);font-size:.88rem;margin-bottom:14px;line-height:1.85}
+.problem-body{padding:24px}
+.desc{color:var(--text2);font-size:.9rem;margin-bottom:16px;line-height:1.8}
 .desc strong{color:var(--text);font-weight:600}
-.desc code{font-family:'JetBrains Mono',monospace;font-size:.8rem;background:var(--surface2);padding:1px 6px;border-radius:4px;color:var(--cyan)}
 
-.spec{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin-bottom:14px}
-.spec h4{font-size:.7rem;color:var(--accent2);margin-bottom:6px;text-transform:uppercase;letter-spacing:1.2px;font-family:'JetBrains Mono',monospace}
-.spec pre{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text);white-space:pre-wrap;line-height:1.65}
-.spec .kw{color:var(--accent2)}.spec .fn{color:var(--green)}.spec .cmt{color:var(--text3)}
+.spec-box{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:16px 20px;margin-bottom:16px;
+}
+.spec-box h4{font-size:.78rem;color:var(--accent2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.spec-box pre{
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--text);
+  white-space:pre-wrap;line-height:1.7;
+}
+.spec-box pre .cmt{color:var(--text3)}
+.spec-box pre .kw{color:var(--accent2)}
+.spec-box pre .fn{color:var(--green)}
+.spec-box pre .num{color:var(--orange)}
+.spec-box pre .str{color:var(--red)}
 
-.ex-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-@media(max-width:600px){.ex-grid{grid-template-columns:1fr}}
-.ex-box{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px}
-.ex-box h5{font-size:.66rem;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace}
-.ex-box code{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--cyan);display:block;line-height:1.55}
+.example{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;
+}
+@media(max-width:600px){.example{grid-template-columns:1fr}}
+.example-box{
+  background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;
+}
+.example-box h5{font-size:.72rem;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.example-box code{
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--blue);display:block;line-height:1.6;
+}
 
-.editor{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px;transition:border-color .2s}
-.editor:focus-within{border-color:var(--accent)}
-.ed-bar{background:var(--bg);padding:5px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-.ed-bar span{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--text3)}
-.dots{display:flex;gap:4px}.dots i{width:8px;height:8px;border-radius:50%;display:block}
-.dots .r{background:#ff5f56}.dots .y{background:#ffbd2e}.dots .gg{background:#27c93f}
+.editor-wrap{
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;
+}
+.editor-bar{
+  background:var(--surface2);padding:6px 14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.editor-bar span{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text3)}
+.editor-bar .dot-row{display:flex;gap:5px}
+.editor-bar .dot{width:9px;height:9px;border-radius:50%}
+.editor-bar .dot.r{background:#ff5f56}.dot.y{background:#ffbd2e}.dot.g{background:#27c93f}
 
 textarea.code{
-  width:100%;min-height:240px;padding:14px 16px;border:none;resize:vertical;
+  width:100%;min-height:220px;padding:16px;border:none;resize:vertical;
   background:var(--bg);color:var(--green);
-  font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.65;
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.7;
   outline:none;tab-size:4;
 }
-textarea.code::placeholder{color:var(--text3);opacity:.6}
+textarea.code::placeholder{color:var(--text3)}
 
-.btn-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:.8rem;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
-.btn:active{transform:scale(.97)}
-.btn-run{background:var(--accent);color:#fff}
-.btn-run:hover{background:#6d9af0;box-shadow:0 0 14px rgba(91,141,239,.25)}
-.btn-run:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;font-size:.82rem;font-weight:600;
+  transition:all .2s;
+}
 .btn-hint{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
 .btn-hint:hover{border-color:var(--accent);color:var(--accent2)}
-.btn-ans{background:var(--surface2);color:var(--orange);border:1px solid rgba(224,175,104,.2)}
-.btn-ans:hover{background:var(--orange-dim);border-color:rgba(224,175,104,.4)}
-.btn-reset{background:transparent;color:var(--text3);border:1px solid var(--border);font-size:.75rem}
+.btn-answer{background:var(--accent);color:#fff}
+.btn-answer:hover{background:#7c6df0;transform:translateY(-1px)}
+.btn-reset{background:transparent;color:var(--text3);border:1px solid var(--border)}
 .btn-reset:hover{border-color:var(--red);color:var(--red)}
 
-.spinner{display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-left:4px}
-@keyframes spin{to{transform:rotate(360deg)}}
+.hint-box,.answer-box{
+  margin-top:14px;border-radius:8px;padding:16px 20px;display:none;
+  animation:fadeIn .3s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.hint-box{background:var(--accent-glow);border:1px solid rgba(108,92,231,.25)}
+.hint-box p{font-size:.85rem;color:var(--accent2);line-height:1.8}
+.answer-box{background:var(--green-glow);border:1px solid rgba(0,206,201,.2)}
+.answer-box pre{
+  font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--text);
+  white-space:pre-wrap;line-height:1.7;
+}
+.answer-box .label{font-size:.72rem;color:var(--green);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
 
-.result-panel{margin-top:12px;border-radius:6px;overflow:hidden;display:none;animation:slideUp .3s ease}
-@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.progress-bar{
+  position:fixed;top:0;left:0;width:100%;height:3px;z-index:99;background:var(--surface);
+}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));width:0%;transition:width .4s}
 
-.result-header{padding:10px 16px;display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600}
-.result-header.pass{background:var(--green-glow);color:var(--green);border:1px solid rgba(115,218,202,.2);border-bottom:none;border-radius:6px 6px 0 0}
-.result-header.fail{background:var(--red-dim);color:var(--red);border:1px solid rgba(247,118,142,.2);border-bottom:none;border-radius:6px 6px 0 0}
-.result-header.partial{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(224,175,104,.2);border-bottom:none;border-radius:6px 6px 0 0}
-
-.result-body{padding:14px 16px;font-size:.84rem;line-height:1.8;border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;background:var(--surface2)}
-.test-item{margin:6px 0;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:4px;font-size:.82rem}
-.test-item code{font-family:'JetBrains Mono',monospace;font-size:.78rem}
-.feedback-text{color:var(--text2);margin-top:10px;line-height:1.8}
-.feedback-text strong{color:var(--text)}
-
-.hint-box,.answer-box{margin-top:12px;border-radius:6px;padding:14px 18px;display:none;animation:slideUp .3s ease}
-.hint-box{background:var(--accent-dim);border:1px solid rgba(91,141,239,.2)}
-.hint-box p{font-size:.84rem;color:var(--accent2);line-height:1.8}
-.answer-box{background:var(--green-dim);border:1px solid rgba(115,218,202,.18)}
-.answer-box .label{font-size:.68rem;color:var(--green);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;font-family:'JetBrains Mono',monospace}
-.answer-box pre{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text);white-space:pre-wrap;line-height:1.65}
-
-footer{text-align:center;padding:36px 20px;color:var(--text3);font-size:.72rem;border-top:1px solid var(--border)}
+footer{text-align:center;padding:40px 20px;color:var(--text3);font-size:.75rem;border-top:1px solid var(--border)}
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <h1>C언어 배열 &amp; 함수 연습</h1>
-  <p>직접 코드를 작성하고, AI가 실행 결과와 피드백을 즉시 알려줍니다</p>
-  <div class="pills">
-    <span class="pill g">● 난이도 중 × 2</span>
-    <span class="pill o">● 난이도 중상 × 2</span>
-    <span class="pill">배열</span><span class="pill">함수</span><span class="pill">포인터</span>
-  </div>
-</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
-<div class="progress-strip">
-  <div class="progress-inner">
-    <div class="progress-dots">
-      <div class="pdot" id="dot1"></div><div class="pdot" id="dot2"></div>
-      <div class="pdot" id="dot3"></div><div class="pdot" id="dot4"></div>
-    </div>
-    <span class="progress-label" id="progressLabel">0 / 4 완료</span>
+<div class="hero">
+  <h1>C언어 배열 & 함수 연습</h1>
+  <p>배열과 함수를 활용한 실전 문제 4선 — 직접 코드를 작성하고 정답을 확인하세요</p>
+  <div class="tags">
+    <span class="tag mid">● 난이도 중 × 2</span>
+    <span class="tag midh">● 난이도 중상 × 2</span>
+    <span class="tag">배열</span>
+    <span class="tag">함수</span>
+    <span class="tag">포인터</span>
   </div>
 </div>
 
 <div class="container">
 
-<!-- ═══ 문제 1 ═══ -->
+<!-- ───── 문제 1 ───── -->
 <div class="problem" id="p1">
-  <div class="p-head">
-    <div class="p-num g">01</div>
-    <div class="p-title">배열의 통계값 계산 함수</div>
-    <span class="diff g">난이도 중</span>
-    <span class="p-status" id="status1"></span>
+  <div class="problem-header" onclick="toggle('p1')">
+    <div class="problem-num mid">01</div>
+    <div class="problem-title">배열의 통계값 계산 함수</div>
+    <span class="diff-badge mid">난이도 중</span>
   </div>
-  <div class="p-body">
+  <div class="problem-body">
     <p class="desc">
-      정수 배열과 크기를 받아 <strong>최대값, 최소값, 평균값</strong>을 포인터를 통해 반환하는 함수 <code>getStats</code>를 작성하세요. 평균은 소수점 이하 버림.
+      정수 배열과 배열의 크기를 매개변수로 받아, 배열 요소의 <strong>최대값, 최소값, 평균값</strong>을 각각 포인터를 통해 반환하는 함수 <code>getStats</code>를 작성하세요.<br>
+      평균값은 소수점 이하를 버린 정수로 계산합니다. 함수의 반환형은 <code>void</code>입니다.
     </p>
-    <div class="spec">
+
+    <div class="spec-box">
       <h4>함수 시그니처</h4>
       <pre><span class="kw">void</span> <span class="fn">getStats</span>(<span class="kw">int</span> arr[], <span class="kw">int</span> size, <span class="kw">int</span> *max, <span class="kw">int</span> *min, <span class="kw">int</span> *avg);</pre>
     </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력</h5><code>arr={3,7,1,9,4,6}, size=6</code></div>
-      <div class="ex-box"><h5>출력</h5><code>max=9, min=1, avg=5</code></div>
+
+    <div class="example">
+      <div class="example-box">
+        <h5>입력 예시</h5>
+        <code>arr = {3, 7, 1, 9, 4, 6}<br>size = 6</code>
+      </div>
+      <div class="example-box">
+        <h5>출력 예시</h5>
+        <code>max = 9, min = 1, avg = 5</code>
+      </div>
     </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력 2</h5><code>arr={-2,0,5,3}, size=4</code></div>
-      <div class="ex-box"><h5>출력 2</h5><code>max=5, min=-2, avg=1</code></div>
-    </div>
-    <div class="editor">
-      <div class="ed-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="gg"></i></div><span>solution_1.c</span></div>
-      <textarea class="code" id="code1" spellcheck="false" placeholder="// getStats 함수를 작성하세요&#10;void getStats(int arr[], int size, int *max, int *min, int *avg) {&#10;    &#10;}"></textarea>
+
+    <div class="editor-wrap">
+      <div class="editor-bar">
+        <div class="dot-row"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+        <span>solution.c</span>
+      </div>
+      <textarea class="code" id="code1" placeholder="// 여기에 getStats 함수를 작성하세요&#10;void getStats(int arr[], int size, int *max, int *min, int *avg) {&#10;    &#10;}" spellcheck="false"></textarea>
     </div>
     <div class="btn-row">
-      <button class="btn btn-run" onclick="runCheck(1)" id="runBtn1">▶ 실행 &amp; 채점<div class="spinner" id="spin1"></div></button>
-      <button class="btn btn-hint" onclick="tog('hint1')">💡 힌트</button>
-      <button class="btn btn-ans" onclick="tog('ans1')">📝 정답</button>
-      <button class="btn btn-reset" onclick="resetCode(1)">↻ 초기화</button>
+      <button class="btn btn-hint" onclick="showHint('p1')">💡 힌트 보기</button>
+      <button class="btn btn-answer" onclick="showAnswer('p1')">✅ 정답 확인</button>
+      <button class="btn btn-reset" onclick="resetCode('code1')">↻ 초기화</button>
     </div>
-    <div class="result-panel" id="result1"></div>
-    <div class="hint-box" id="hint1"><p>💡 <strong>힌트:</strong> 첫 번째 요소로 max, min을 초기화한 뒤 반복문으로 비교하세요. 평균은 합계를 size로 나누면 됩니다. <code>*max = 값</code> 형태로 저장하세요.</p></div>
-    <div class="answer-box" id="ans1">
+    <div class="hint-box" id="p1-hint">
+      <p>💡 <strong>힌트:</strong> 첫 번째 요소로 max, min을 초기화한 뒤, 반복문으로 비교하세요. 평균은 합계를 구한 뒤 size로 나누면 됩니다. 결과를 포인터가 가리키는 곳에 <code>*max = 값</code> 형태로 저장하세요.</p>
+    </div>
+    <div class="answer-box" id="p1-answer">
       <div class="label">모범 답안</div>
       <pre>void getStats(int arr[], int size, int *max, int *min, int *avg) {
     *max = arr[0];
     *min = arr[0];
     int sum = arr[0];
 
-    for (int i = 1; i &lt; size; i++) {
+    for (int i = 1; i < size; i++) {
         if (arr[i] > *max) *max = arr[i];
-        if (arr[i] &lt; *min) *min = arr[i];
+        if (arr[i] < *min) *min = arr[i];
         sum += arr[i];
     }
     *avg = sum / size;
@@ -215,107 +232,143 @@ footer{text-align:center;padding:36px 20px;color:var(--text3);font-size:.72rem;b
   </div>
 </div>
 
-<!-- ═══ 문제 2 ═══ -->
+<!-- ───── 문제 2 ───── -->
 <div class="problem" id="p2">
-  <div class="p-head">
-    <div class="p-num g">02</div>
-    <div class="p-title">배열 회전 함수</div>
-    <span class="diff g">난이도 중</span>
-    <span class="p-status" id="status2"></span>
+  <div class="problem-header" onclick="toggle('p2')">
+    <div class="problem-num mid">02</div>
+    <div class="problem-title">배열 회전 함수</div>
+    <span class="diff-badge mid">난이도 중</span>
   </div>
-  <div class="p-body">
+  <div class="problem-body">
     <p class="desc">
-      정수 배열을 <strong>오른쪽으로 k칸 회전</strong>시키는 함수 <code>rotateRight</code>를 작성하세요. k가 배열 크기보다 클 수 있습니다.
+      정수 배열을 <strong>오른쪽으로 k칸 회전</strong>시키는 함수 <code>rotateRight</code>를 작성하세요.<br>
+      예를 들어 <code>{1,2,3,4,5}</code>를 2칸 회전하면 <code>{4,5,1,2,3}</code>이 됩니다.<br>
+      추가 배열(임시 배열)을 하나 사용해도 됩니다. k가 배열 크기보다 클 수 있음에 유의하세요.
     </p>
-    <div class="spec">
+
+    <div class="spec-box">
       <h4>함수 시그니처</h4>
       <pre><span class="kw">void</span> <span class="fn">rotateRight</span>(<span class="kw">int</span> arr[], <span class="kw">int</span> size, <span class="kw">int</span> k);</pre>
     </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력</h5><code>arr={1,2,3,4,5}, size=5, k=2</code></div>
-      <div class="ex-box"><h5>출력</h5><code>arr={4,5,1,2,3}</code></div>
+
+    <div class="example">
+      <div class="example-box">
+        <h5>입력 예시</h5>
+        <code>arr = {1, 2, 3, 4, 5}<br>size = 5, k = 2</code>
+      </div>
+      <div class="example-box">
+        <h5>출력 예시</h5>
+        <code>arr = {4, 5, 1, 2, 3}</code>
+      </div>
     </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력 2</h5><code>arr={10,20,30}, size=3, k=5</code></div>
-      <div class="ex-box"><h5>출력 2</h5><code>arr={20,30,10}</code></div>
+    <div class="example">
+      <div class="example-box">
+        <h5>입력 예시 2</h5>
+        <code>arr = {10, 20, 30}<br>size = 3, k = 5</code>
+      </div>
+      <div class="example-box">
+        <h5>출력 예시 2</h5>
+        <code>arr = {20, 30, 10}<br><span style="color:var(--text3)">// k%3 = 2칸 회전</span></code>
+      </div>
     </div>
-    <div class="editor">
-      <div class="ed-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="gg"></i></div><span>solution_2.c</span></div>
-      <textarea class="code" id="code2" spellcheck="false" placeholder="// rotateRight 함수를 작성하세요&#10;void rotateRight(int arr[], int size, int k) {&#10;    &#10;}"></textarea>
+
+    <div class="editor-wrap">
+      <div class="editor-bar">
+        <div class="dot-row"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+        <span>solution.c</span>
+      </div>
+      <textarea class="code" id="code2" placeholder="// 여기에 rotateRight 함수를 작성하세요&#10;void rotateRight(int arr[], int size, int k) {&#10;    &#10;}" spellcheck="false"></textarea>
     </div>
     <div class="btn-row">
-      <button class="btn btn-run" onclick="runCheck(2)" id="runBtn2">▶ 실행 &amp; 채점<div class="spinner" id="spin2"></div></button>
-      <button class="btn btn-hint" onclick="tog('hint2')">💡 힌트</button>
-      <button class="btn btn-ans" onclick="tog('ans2')">📝 정답</button>
-      <button class="btn btn-reset" onclick="resetCode(2)">↻ 초기화</button>
+      <button class="btn btn-hint" onclick="showHint('p2')">💡 힌트 보기</button>
+      <button class="btn btn-answer" onclick="showAnswer('p2')">✅ 정답 확인</button>
+      <button class="btn btn-reset" onclick="resetCode('code2')">↻ 초기화</button>
     </div>
-    <div class="result-panel" id="result2"></div>
-    <div class="hint-box" id="hint2"><p>💡 <strong>힌트:</strong> <code>k = k % size</code>로 불필요한 회전을 제거하세요. 임시 배열에 <code>temp[(i+k)%size] = arr[i]</code>로 저장 후 원본에 복사하세요.</p></div>
-    <div class="answer-box" id="ans2">
+    <div class="hint-box" id="p2-hint">
+      <p>💡 <strong>힌트:</strong> 먼저 <code>k = k % size</code>로 불필요한 회전을 제거하세요. 임시 배열에 결과를 만든 뒤 원본에 복사하는 방법이 가장 직관적입니다. 새 인덱스는 <code>(i + k) % size</code>로 계산할 수 있습니다.</p>
+    </div>
+    <div class="answer-box" id="p2-answer">
       <div class="label">모범 답안</div>
       <pre>void rotateRight(int arr[], int size, int k) {
     k = k % size;
     if (k == 0) return;
 
     int temp[size];
-    for (int i = 0; i &lt; size; i++)
+
+    for (int i = 0; i < size; i++) {
         temp[(i + k) % size] = arr[i];
-    for (int i = 0; i &lt; size; i++)
+    }
+    for (int i = 0; i < size; i++) {
         arr[i] = temp[i];
+    }
 }</pre>
     </div>
   </div>
 </div>
 
-<!-- ═══ 문제 3 ═══ -->
+<!-- ───── 문제 3 ───── -->
 <div class="problem" id="p3">
-  <div class="p-head">
-    <div class="p-num o">03</div>
-    <div class="p-title">두 정렬 배열 병합 함수</div>
-    <span class="diff o">난이도 중상</span>
-    <span class="p-status" id="status3"></span>
+  <div class="problem-header" onclick="toggle('p3')">
+    <div class="problem-num midh">03</div>
+    <div class="problem-title">두 정렬 배열 병합 함수</div>
+    <span class="diff-badge midh">난이도 중상</span>
   </div>
-  <div class="p-body">
+  <div class="problem-body">
     <p class="desc">
-      <strong>오름차순 정렬된</strong> 두 정수 배열을 정렬 상태를 유지하며 <code>result[]</code>에 병합하세요. 투 포인터 방식 O(n+m)으로 해결해야 합니다. 원소 개수를 반환합니다.
+      <strong>오름차순으로 정렬된</strong> 두 정수 배열 <code>a[]</code>와 <code>b[]</code>를 받아, 정렬 상태를 유지하면서 하나의 배열 <code>result[]</code>에 병합하는 함수를 작성하세요.<br>
+      병합된 배열의 실제 원소 개수를 반환합니다. 이중 for문으로 다시 정렬하지 <strong>않고</strong>, 투 포인터 방식으로 O(n+m)에 해결해야 합니다.
     </p>
-    <div class="spec">
+
+    <div class="spec-box">
       <h4>함수 시그니처</h4>
-      <pre><span class="kw">int</span> <span class="fn">mergeSorted</span>(<span class="kw">int</span> a[], <span class="kw">int</span> aLen, <span class="kw">int</span> b[], <span class="kw">int</span> bLen, <span class="kw">int</span> result[]);</pre>
+      <pre><span class="kw">int</span> <span class="fn">mergeSorted</span>(<span class="kw">int</span> a[], <span class="kw">int</span> aLen,
+               <span class="kw">int</span> b[], <span class="kw">int</span> bLen,
+               <span class="kw">int</span> result[]);</pre>
     </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력</h5><code>a={1,3,5,7}, b={2,4,6,8,10}</code></div>
-      <div class="ex-box"><h5>출력</h5><code>result={1,2,3,4,5,6,7,8,10}<br>반환값: 9</code></div>
+
+    <div class="example">
+      <div class="example-box">
+        <h5>입력 예시</h5>
+        <code>a = {1, 3, 5, 7}<br>b = {2, 4, 6, 8, 10}</code>
+      </div>
+      <div class="example-box">
+        <h5>출력 예시</h5>
+        <code>result = {1,2,3,4,5,6,7,8,10}<br>반환값: 9</code>
+      </div>
     </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력 2</h5><code>a={2,5}, b={1,3,4}</code></div>
-      <div class="ex-box"><h5>출력 2</h5><code>result={1,2,3,4,5}<br>반환값: 5</code></div>
-    </div>
-    <div class="editor">
-      <div class="ed-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="gg"></i></div><span>solution_3.c</span></div>
-      <textarea class="code" id="code3" spellcheck="false" placeholder="// mergeSorted 함수를 작성하세요&#10;int mergeSorted(int a[], int aLen, int b[], int bLen, int result[]) {&#10;    &#10;}"></textarea>
+
+    <div class="editor-wrap">
+      <div class="editor-bar">
+        <div class="dot-row"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+        <span>solution.c</span>
+      </div>
+      <textarea class="code" id="code3" placeholder="// 여기에 mergeSorted 함수를 작성하세요&#10;int mergeSorted(int a[], int aLen, int b[], int bLen, int result[]) {&#10;    &#10;}" spellcheck="false"></textarea>
     </div>
     <div class="btn-row">
-      <button class="btn btn-run" onclick="runCheck(3)" id="runBtn3">▶ 실행 &amp; 채점<div class="spinner" id="spin3"></div></button>
-      <button class="btn btn-hint" onclick="tog('hint3')">💡 힌트</button>
-      <button class="btn btn-ans" onclick="tog('ans3')">📝 정답</button>
-      <button class="btn btn-reset" onclick="resetCode(3)">↻ 초기화</button>
+      <button class="btn btn-hint" onclick="showHint('p3')">💡 힌트 보기</button>
+      <button class="btn btn-answer" onclick="showAnswer('p3')">✅ 정답 확인</button>
+      <button class="btn btn-reset" onclick="resetCode('code3')">↻ 초기화</button>
     </div>
-    <div class="result-panel" id="result3"></div>
-    <div class="hint-box" id="hint3"><p>💡 <strong>힌트:</strong> 인덱스 i, j, k를 각각 a, b, result용으로 선언하세요. 앞에서부터 비교하며 작은 값을 result에 넣고, 한쪽이 끝나면 나머지를 복사합니다. (Merge Sort의 merge 단계)</p></div>
-    <div class="answer-box" id="ans3">
+    <div class="hint-box" id="p3-hint">
+      <p>💡 <strong>힌트:</strong> 인덱스 i, j, k를 각각 a, b, result용으로 선언하세요. 두 배열을 앞에서부터 비교하며 작은 값을 result에 넣습니다. 한쪽이 끝나면 나머지를 그대로 복사하면 됩니다. Merge Sort의 merge 단계와 동일한 로직입니다.</p>
+    </div>
+    <div class="answer-box" id="p3-answer">
       <div class="label">모범 답안</div>
       <pre>int mergeSorted(int a[], int aLen, int b[], int bLen, int result[]) {
     int i = 0, j = 0, k = 0;
 
-    while (i &lt; aLen &amp;&amp; j &lt; bLen) {
-        if (a[i] &lt;= b[j])
+    while (i < aLen && j < bLen) {
+        if (a[i] <= b[j])
             result[k++] = a[i++];
         else
             result[k++] = b[j++];
     }
-    while (i &lt; aLen) result[k++] = a[i++];
-    while (j &lt; bLen) result[k++] = b[j++];
+
+    while (i < aLen)
+        result[k++] = a[i++];
+
+    while (j < bLen)
+        result[k++] = b[j++];
 
     return k;
 }</pre>
@@ -323,50 +376,70 @@ footer{text-align:center;padding:36px 20px;color:var(--text3);font-size:.72rem;b
   </div>
 </div>
 
-<!-- ═══ 문제 4 ═══ -->
+<!-- ───── 문제 4 ───── -->
 <div class="problem" id="p4">
-  <div class="p-head">
-    <div class="p-num o">04</div>
-    <div class="p-title">문자 배열 모음 개수 세기 함수</div>
-    <span class="diff o">난이도 중상</span>
-    <span class="p-status" id="status4"></span>
+  <div class="problem-header" onclick="toggle('p4')">
+    <div class="problem-num midh">04</div>
+    <div class="problem-title">문자 배열 모음 개수 세기 함수</div>
+    <span class="diff-badge midh">난이도 중상</span>
   </div>
-  <div class="p-body">
+  <div class="problem-body">
     <p class="desc">
-      문자 5개로 이루어진 배열에서 <strong>모음(a, e, i, o, u)의 개수</strong>를 세는 함수를 작성하세요.
-      <strong>대문자와 소문자를 모두 처리</strong>해야 합니다. <code>main</code> 함수 포함 전체 프로그램을 작성하세요.
+      문자 5개로 이루어진 배열을 입력받아, 입력된 문자 중 <strong>모음(a, e, i, o, u)의 개수</strong>를 세는 함수를 작성하세요.<br>
+      <strong>대문자와 소문자를 모두 처리</strong>해야 합니다. (예: 'A'와 'a' 모두 모음으로 판별)<br>
+      함수는 모음의 개수를 정수로 반환합니다. <code>main</code> 함수에서 5개의 문자를 입력받고 결과를 출력하는 전체 프로그램을 작성하세요.
     </p>
-    <div class="spec">
+
+    <div class="spec-box">
       <h4>함수 시그니처</h4>
       <pre><span class="kw">int</span> <span class="fn">countVowels</span>(<span class="kw">char</span> arr[], <span class="kw">int</span> size);</pre>
     </div>
-    <div class="spec" style="margin-top:6px">
+
+    <div class="example">
+      <div class="example-box">
+        <h5>입력 예시</h5>
+        <code>문자 5개 입력: A b e K u</code>
+      </div>
+      <div class="example-box">
+        <h5>출력 예시</h5>
+        <code>모음 개수: 3</code>
+      </div>
+    </div>
+    <div class="example">
+      <div class="example-box">
+        <h5>입력 예시 2</h5>
+        <code>문자 5개 입력: x Y z W o</code>
+      </div>
+      <div class="example-box">
+        <h5>출력 예시 2</h5>
+        <code>모음 개수: 1</code>
+      </div>
+    </div>
+
+    <div class="spec-box" style="margin-top:4px">
       <h4>요구사항</h4>
       <pre><span class="cmt">// 1. countVowels 함수를 별도로 정의할 것</span>
 <span class="cmt">// 2. 대소문자 구분 없이 a, e, i, o, u를 모음으로 판별</span>
-<span class="cmt">// 3. main에서 scanf로 5개 문자를 입력받고 결과 출력</span></pre>
+<span class="cmt">// 3. main에서 scanf로 5개 문자를 입력받고 함수 호출 후 결과 출력</span>
+<span class="cmt">// 4. tolower() 또는 직접 대소문자 변환 로직 사용 가능</span></pre>
     </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력</h5><code>A b e K u</code></div>
-      <div class="ex-box"><h5>출력</h5><code>모음 개수: 3</code></div>
-    </div>
-    <div class="ex-grid">
-      <div class="ex-box"><h5>입력 2</h5><code>x Y z W o</code></div>
-      <div class="ex-box"><h5>출력 2</h5><code>모음 개수: 1</code></div>
-    </div>
-    <div class="editor">
-      <div class="ed-bar"><div class="dots"><i class="r"></i><i class="y"></i><i class="gg"></i></div><span>solution_4.c</span></div>
-      <textarea class="code" id="code4" spellcheck="false" placeholder="// 전체 프로그램을 작성하세요 (main 포함)&#10;#include <stdio.h>&#10;&#10;int countVowels(char arr[], int size) {&#10;    &#10;}&#10;&#10;int main() {&#10;    &#10;    return 0;&#10;}"></textarea>
+
+    <div class="editor-wrap">
+      <div class="editor-bar">
+        <div class="dot-row"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+        <span>solution.c</span>
+      </div>
+      <textarea class="code" id="code4" placeholder="// 전체 프로그램을 작성하세요 (main 포함)&#10;#include <stdio.h>&#10;&#10;int countVowels(char arr[], int size) {&#10;    &#10;}&#10;&#10;int main() {&#10;    &#10;    return 0;&#10;}" spellcheck="false"></textarea>
     </div>
     <div class="btn-row">
-      <button class="btn btn-run" onclick="runCheck(4)" id="runBtn4">▶ 실행 &amp; 채점<div class="spinner" id="spin4"></div></button>
-      <button class="btn btn-hint" onclick="tog('hint4')">💡 힌트</button>
-      <button class="btn btn-ans" onclick="tog('ans4')">📝 정답</button>
-      <button class="btn btn-reset" onclick="resetCode(4)">↻ 초기화</button>
+      <button class="btn btn-hint" onclick="showHint('p4')">💡 힌트 보기</button>
+      <button class="btn btn-answer" onclick="showAnswer('p4')">✅ 정답 확인</button>
+      <button class="btn btn-reset" onclick="resetCode('code4')">↻ 초기화</button>
     </div>
-    <div class="result-panel" id="result4"></div>
-    <div class="hint-box" id="hint4"><p>💡 <strong>힌트:</strong> <code>tolower()</code>로 소문자 변환 후 비교하세요. <code>&lt;ctype.h&gt;</code> include 필요. <code>scanf(" %c", ...)</code>에서 공백을 넣어 whitespace를 건너뛰세요.</p></div>
-    <div class="answer-box" id="ans4">
+    <div class="hint-box" id="p4-hint">
+      <p>💡 <strong>힌트:</strong> 각 문자를 <code>tolower()</code>로 소문자로 변환한 뒤 'a', 'e', 'i', 'o', 'u'와 비교하세요. <code>&lt;ctype.h&gt;</code>를 include하면 <code>tolower()</code>를 쓸 수 있습니다. 또는 직접 <code>if (ch >= 'A' && ch <= 'Z') ch += 32;</code>로 변환해도 됩니다.</p>
+    </div>
+    <div class="answer-box" id="p4-answer">
       <div class="label">모범 답안</div>
       <pre>#include &lt;stdio.h&gt;
 #include &lt;ctype.h&gt;
@@ -375,19 +448,25 @@ int countVowels(char arr[], int size) {
     int count = 0;
     for (int i = 0; i &lt; size; i++) {
         char ch = tolower(arr[i]);
-        if (ch=='a'||ch=='e'||ch=='i'||ch=='o'||ch=='u')
+        if (ch == 'a' || ch == 'e' || ch == 'i' ||
+            ch == 'o' || ch == 'u') {
             count++;
+        }
     }
     return count;
 }
 
 int main() {
     char arr[5];
-    printf("문자 5개 입력: ");
-    for (int i = 0; i &lt; 5; i++)
-        scanf(" %c", &amp;arr[i]);
 
-    printf("모음 개수: %d\n", countVowels(arr, 5));
+    printf("문자 5개 입력: ");
+    for (int i = 0; i &lt; 5; i++) {
+        scanf(" %c", &amp;arr[i]);
+    }
+
+    int result = countVowels(arr, 5);
+    printf("모음 개수: %d\n", result);
+
     return 0;
 }</pre>
     </div>
@@ -395,194 +474,46 @@ int main() {
 </div>
 
 </div>
-<footer>C언어 배열 &amp; 함수 연습문제 — AI 채점으로 즉시 피드백을 받아보세요</footer>
+
+<footer>C언어 배열 & 함수 연습문제 — 직접 코드를 작성해보며 실력을 키워보세요</footer>
 
 <script>
+function showHint(id) {
+  const el = document.getElementById(id + '-hint');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+function showAnswer(id) {
+  const el = document.getElementById(id + '-answer');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  updateProgress();
+}
+function resetCode(textareaId) {
+  document.getElementById(textareaId).value = '';
+}
+
+// Tab key support in textareas
 document.querySelectorAll('textarea.code').forEach(ta => {
   ta.addEventListener('keydown', e => {
     if (e.key === 'Tab') {
       e.preventDefault();
-      const s = ta.selectionStart;
-      ta.value = ta.value.substring(0, s) + '    ' + ta.value.substring(ta.selectionEnd);
+      const s = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.substring(0, s) + '    ' + ta.value.substring(end);
       ta.selectionStart = ta.selectionEnd = s + 4;
     }
   });
 });
 
-function tog(id) {
-  const el = document.getElementById(id);
-  el.style.display = el.style.display === 'block' ? 'none' : 'block';
-}
-function resetCode(n) {
-  document.getElementById('code' + n).value = '';
-  document.getElementById('result' + n).style.display = 'none';
-  document.getElementById('result' + n).innerHTML = '';
-  document.getElementById('p' + n).classList.remove('pass-border', 'fail-border');
-  const st = document.getElementById('status' + n);
-  st.textContent = ''; st.classList.remove('show');
-}
-
-const solved = {};
 function updateProgress() {
-  let cnt = 0;
-  for (let i = 1; i <= 4; i++) {
-    const d = document.getElementById('dot' + i);
-    if (solved[i] === true) { d.className = 'pdot pass'; cnt++; }
-    else if (solved[i] === false) d.className = 'pdot fail';
-    else d.className = 'pdot';
-  }
-  document.getElementById('progressLabel').textContent = cnt + ' / 4 완료';
+  const answers = document.querySelectorAll('.answer-box');
+  let opened = 0;
+  answers.forEach(a => { if (a.style.display === 'block') opened++; });
+  document.getElementById('progressFill').style.width = (opened / answers.length * 100) + '%';
 }
 
-const problems = {
-  1: {
-    title: "배열 통계값 계산 (getStats)",
-    signature: "void getStats(int arr[], int size, int *max, int *min, int *avg);",
-    tests: [
-      { input: "arr = {3, 7, 1, 9, 4, 6}, size = 6", expected: "max=9, min=1, avg=5" },
-      { input: "arr = {-2, 0, 5, 3}, size = 4", expected: "max=5, min=-2, avg=1" },
-      { input: "arr = {10}, size = 1", expected: "max=10, min=10, avg=10" }
-    ]
-  },
-  2: {
-    title: "배열 오른쪽 회전 (rotateRight)",
-    signature: "void rotateRight(int arr[], int size, int k);",
-    tests: [
-      { input: "arr={1,2,3,4,5}, size=5, k=2", expected: "arr={4,5,1,2,3}" },
-      { input: "arr={10,20,30}, size=3, k=5", expected: "arr={20,30,10}" },
-      { input: "arr={1,2,3,4}, size=4, k=4", expected: "arr={1,2,3,4}" }
-    ]
-  },
-  3: {
-    title: "정렬 배열 병합 (mergeSorted)",
-    signature: "int mergeSorted(int a[], int aLen, int b[], int bLen, int result[]);",
-    tests: [
-      { input: "a={1,3,5,7}, b={2,4,6,8,10}", expected: "result={1,2,3,4,5,6,7,8,10}, return 9" },
-      { input: "a={2,5}, b={1,3,4}", expected: "result={1,2,3,4,5}, return 5" },
-      { input: "a={}, aLen=0, b={1,2,3}", expected: "result={1,2,3}, return 3" }
-    ]
-  },
-  4: {
-    title: "모음 개수 세기 (countVowels) - main 포함 전체 프로그램",
-    signature: "int countVowels(char arr[], int size);",
-    tests: [
-      { input: "입력: A b e K u", expected: "모음 개수: 3" },
-      { input: "입력: x Y z W o", expected: "모음 개수: 1" },
-      { input: "입력: a E i O u", expected: "모음 개수: 5" }
-    ]
-  }
-};
-
-async function runCheck(n) {
-  const code = document.getElementById('code' + n).value.trim();
-  if (!code) { alert('코드를 먼저 작성해주세요!'); return; }
-
-  const btn = document.getElementById('runBtn' + n);
-  const spin = document.getElementById('spin' + n);
-  btn.disabled = true;
-  spin.style.display = 'inline-block';
-
-  const p = problems[n];
-  const testDesc = p.tests.map((t, i) =>
-    `테스트${i+1}: ${t.input} → 기대 출력: ${t.expected}`
-  ).join('\n');
-
-  const prompt = `당신은 C언어 코드 채점기입니다. 학생의 코드를 분석하고 각 테스트 케이스에 대해 코드를 머릿속에서 실행(trace)하여 실제 출력값을 계산하세요.
-
-순수 JSON만 응답하세요. 백틱이나 다른 텍스트 절대 금지.
-
-## 문제: ${p.title}
-함수 시그니처: ${p.signature}
-
-## 테스트 케이스
-${testDesc}
-
-## 학생 코드
-${code}
-
-## 응답 형식
-{"compiles":true/false,"tests":[{"pass":true/false,"input":"입력설명","expected":"기대출력","actual":"학생코드의 실제 출력값 (코드를 trace하여 계산)"}],"allPass":true/false,"feedback":"한국어 2~3문장. 맞으면 칭찬+핵심 포인트, 틀리면 어디가 어떻게 틀렸는지 구체적으로."}`;
-
-  try {
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-    const data = await resp.json();
-    const raw = data.content.map(c => c.text || '').join('');
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const result = JSON.parse(clean);
-    renderResult(n, result);
-  } catch (err) {
-    console.error(err);
-    renderError(n);
-  } finally {
-    btn.disabled = false;
-    spin.style.display = 'none';
-  }
-}
-
-function renderResult(n, r) {
-  const panel = document.getElementById('result' + n);
-  const card = document.getElementById('p' + n);
-  const st = document.getElementById('status' + n);
-  card.classList.remove('pass-border', 'fail-border');
-
-  let hClass, hText, icon;
-  if (!r.compiles) {
-    hClass = 'fail'; hText = '✗ 컴파일 오류'; icon = '✗';
-    solved[n] = false; card.classList.add('fail-border');
-  } else if (r.allPass) {
-    hClass = 'pass'; hText = '✓ 전체 통과!'; icon = '✓';
-    solved[n] = true; card.classList.add('pass-border');
-  } else {
-    const pc = r.tests.filter(t => t.pass).length;
-    hClass = 'partial'; hText = `△ ${pc}/${r.tests.length} 통과`; icon = '△';
-    solved[n] = false; card.classList.add('fail-border');
-  }
-  st.textContent = icon; st.classList.add('show');
-
-  let html = '';
-  if (r.tests) {
-    r.tests.forEach((t, i) => {
-      const ok = t.pass;
-      const ic = ok ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--red)">✗</span>';
-      html += `<div class="test-item">
-        ${ic} <strong style="color:var(--text)">테스트 ${i+1}</strong> &nbsp;<span style="color:var(--text3)">${esc(t.input)}</span><br>
-        <span style="margin-left:22px;color:var(--text3)">기대값:</span> <code style="color:var(--cyan)">${esc(t.expected)}</code><br>
-        <span style="margin-left:22px;color:var(--text3)">실제값:</span> <code style="color:${ok?'var(--green)':'var(--red)'}">${esc(t.actual)}</code>
-      </div>`;
-    });
-  }
-
-  panel.innerHTML = `
-    <div class="result-header ${hClass}">${hText}</div>
-    <div class="result-body">
-      ${html}
-      <div class="feedback-text">${esc(r.feedback)}</div>
-    </div>`;
-  panel.style.display = 'block';
-  updateProgress();
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-function renderError(n) {
-  const panel = document.getElementById('result' + n);
-  panel.innerHTML = `
-    <div class="result-header fail">⚠ 채점 오류</div>
-    <div class="result-body"><div class="feedback-text">AI 채점 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</div></div>`;
-  panel.style.display = 'block';
-}
-
-function esc(s) {
-  if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+// Smooth scroll offset
+document.querySelectorAll('.problem-header').forEach(h => {
+  h.style.userSelect = 'none';
+});
 </script>
 </body>
 </html>
